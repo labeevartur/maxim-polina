@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Максим & Полина — Живой эфир свадьбы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <style>
+    :root {
+      --milk: #FAF7F2;
+      --beige: #EFE7DC;
+      --beige-dark: #DFD3C3;
+      --chocolate: #3B261D;
+      --chocolate-soft: #63483C;
+      --dusty-blue: #7A9EB1;
+      --dusty-blue-dark: #5C8196;
+      --gold-accent: #C5A880;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--milk);
+      color: var(--chocolate);
+      overflow-x: hidden;
+    }
+
+    /* ================= ЭКРАН ПРОЕКТОРА ================= */
+    #screen-view {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(122, 158, 177, 0.16), transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(197, 168, 128, 0.22), transparent 50%),
+        linear-gradient(135deg, var(--milk) 0%, var(--beige) 100%);
+      display: none;
+    }
+
+    .screen-frame {
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(59, 38, 29, 0.18);
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .local-warning {
+      display: none;
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #C04A3E;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .screen-header {
+      position: relative;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 36px 46px 0;
+      pointer-events: none;
+    }
+
+    .couple-badge {
+      background: rgba(250, 247, 242, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 18px 30px;
+      border-radius: 20px;
+      border: 1px solid rgba(59, 38, 29, 0.14);
+      box-shadow: 0 12px 32px rgba(59, 38, 29, 0.06);
+    }
+
+    .couple-subtitle {
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--dusty-blue-dark);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .couple-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 46px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--chocolate);
+    }
+
+    .couple-title span {
+      font-style: italic;
+      color: var(--dusty-blue-dark);
+      font-weight: 600;
+      margin: 0 6px;
+    }
+
+    .qr-card {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(250, 247, 242, 0.92);
+      backdrop-filter: blur(10px);
+      padding: 14px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(59, 38, 29, 0.16);
+      box-shadow: 0 12px 32px rgba(59, 38, 29, 0.08);
+    }
+
+    .qr-text {
+      text-align: right;
+      max-width: 195px;
+    }
+
+    .qr-text strong {
+      display: block;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      line-height: 1.1;
+      color: var(--chocolate);
+      margin-bottom: 4px;
+    }
+
+    .qr-text span {
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--chocolate-soft);
+      display: block;
+    }
+
+    #qr-canvas {
+      border-radius: 10px;
+      background: #fff;
+      padding: 6px;
+      border: 1px solid var(--beige-dark);
+    }
+
+    #circles-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .center-monogram {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      opacity: 0.22;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .center-monogram .initials {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 130px;
+      font-style: italic;
+      line-height: 1;
+      color: var(--chocolate);
+    }
+
+    .center-monogram p {
+      font-size: 14px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    .video-circle-wrap {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), left 1.2s ease, top 1.2s ease;
+      will-change: transform, left, top;
+      z-index: 12;
+    }
+
+    .video-circle-wrap.premiere {
+      left: 50% !important;
+      top: 47% !important;
+      transform: translate(-50%, -50%) scale(1.65) !important;
+      z-index: 40 !important;
+    }
+
+    .video-circle-ring {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      padding: 6px;
+      background: linear-gradient(135deg, var(--dusty-blue) 0%, var(--gold-accent) 50%, var(--chocolate) 100%);
+      box-shadow: 0 18px 45px rgba(59, 38, 29, 0.24);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .video-circle-ring video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      background: var(--chocolate);
+      display: block;
+    }
+
+    .circle-author {
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--chocolate);
+      color: var(--milk);
+      padding: 5px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 6px 16px rgba(59, 38, 29, 0.25);
+      border: 1.5px solid var(--milk);
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Красивая бегущая строка пожеланий */
+    .ticker-bar {
+      position: absolute;
+      bottom: 30px;
+      left: 40px;
+      right: 40px;
+      height: 64px;
+      background: linear-gradient(90deg, #3B261D 0%, #4E3327 50%, #3B261D 100%);
+      color: var(--milk);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      z-index: 30;
+      box-shadow: 0 14px 34px rgba(59, 38, 29, 0.28);
+      border: 1.5px solid rgba(197, 168, 128, 0.55);
+    }
+
+    .ticker-label {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--dusty-blue) 0%, var(--dusty-blue-dark) 100%);
+      color: #fff;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 26px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      z-index: 2;
+      box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+    }
+
+    .ticker-track-wrap {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-track {
+      display: inline-flex;
+      white-space: nowrap;
+      animation: marquee 32s linear infinite;
+      padding-left: 100%;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      margin-right: 48px;
+      font-size: 19px;
+      letter-spacing: 0.01em;
+    }
+
+    .ticker-item strong {
+      background: rgba(122, 158, 177, 0.25);
+      border: 1px solid rgba(168, 200, 216, 0.4);
+      color: #CBE3F0;
+      padding: 3px 12px;
+      border-radius: 999px;
+      margin-right: 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .ticker-dot {
+      color: var(--gold-accent);
+      margin-left: 48px;
+      font-size: 16px;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .dj-controls {
+      position: absolute;
+      bottom: 106px;
+      right: 44px;
+      z-index: 35;
+      display: flex;
+      gap: 8px;
+      opacity: 0.55;
+      transition: opacity 0.25s;
+    }
+    .dj-controls:hover { opacity: 1; }
+    .dj-btn {
+      background: var(--milk);
+      border: 1px solid var(--chocolate-soft);
+      color: var(--chocolate);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ================= МОБИЛЬНЫЙ ЭКРАН (ГОСТЬ И ВЕДУЩИЙ) ================= */
+    #mobile-view {
+      display: none;
+      min-height: 100vh;
+      padding: 16px 14px 36px;
+      background: linear-gradient(180deg, var(--milk) 0%, var(--beige) 100%);
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .guest-card {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 20px 18px 24px;
+      border: 1px solid rgba(59, 38, 29, 0.12);
+      box-shadow: 0 16px 40px rgba(59, 38, 29, 0.08);
+    }
+
+    .top-role-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .role-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--dusty-blue-dark);
+      font-weight: 700;
+    }
+
+    .role-switch-btn {
+      background: var(--beige);
+      border: 1px solid var(--beige-dark);
+      color: var(--chocolate);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .role-switch-btn.host-active {
+      background: var(--chocolate);
+      color: var(--gold-accent);
+      border-color: var(--chocolate);
+    }
+
+    .guest-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .guest-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 34px;
+      color: var(--chocolate);
+      line-height: 1.05;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--beige);
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 10px;
+      border-radius: 11px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--chocolate-soft);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--chocolate);
+      color: var(--milk);
+      box-shadow: 0 4px 12px rgba(59, 38, 29, 0.18);
+    }
+
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--chocolate-soft);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1.5px solid var(--beige-dark);
+      background: var(--milk);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--chocolate);
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--dusty-blue);
+    }
+
+    /* Быстрые чипсы для ведущего */
+    .quick-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .chip-btn {
+      background: var(--beige);
+      border: 1px solid var(--beige-dark);
+      color: var(--chocolate);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .chip-btn:active { background: var(--dusty-blue); color: #fff; }
+
+    /* Круглая камера */
+    .camera-box {
+      position: relative;
+      width: 246px;
+      height: 246px;
+      margin: 8px auto 16px;
+      border-radius: 50%;
+      padding: 6px;
+      background: linear-gradient(135deg, var(--dusty-blue), var(--gold-accent), var(--chocolate));
+      box-shadow: 0 14px 30px rgba(59, 38, 29, 0.16);
+    }
+
+    .camera-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #231712;
+      position: relative;
+    }
+
+    #preview-video, #recorded-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    #preview-video.mirrored {
+      transform: scaleX(-1);
+    }
+
+    #recorded-video {
+      display: none;
+    }
+
+    .timer-pill {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(59, 38, 29, 0.85);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 5;
+    }
+
+    .flip-cam-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid var(--milk);
+      background: var(--chocolate);
+      color: var(--milk);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.28);
+    }
+
+    /* Панель эмодзи для текстовых пожеланий */
+    .emoji-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .emoji-btn {
+      flex: 1;
+      background: var(--beige);
+      border: 1px solid var(--beige-dark);
+      border-radius: 10px;
+      padding: 7px 0;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .emoji-btn:active { transform: scale(0.9); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 16px;
+      background: var(--dusty-blue);
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(122, 158, 177, 0.35);
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary.recording { background: #C04A3E; box-shadow: 0 8px 20px rgba(192, 74, 62, 0.35); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1.5px solid var(--beige-dark);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--chocolate);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .status-msg {
+      text-align: center;
+      font-size: 13px;
+      margin-top: 12px;
+      min-height: 20px;
+      color: var(--chocolate-soft);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= ЭКРАН ПРОЕКТОРА ================= -->
+  <div id="screen-view">
+    <div class="local-warning" id="local-warning">
+      ⚠️ Файл открыт локально с ПК! Загрузите его на Cloudflare Pages / сайт (HTTPS), чтобы QR-код открывался с телефонов.
+    </div>
+
+    <div class="screen-frame"></div>
+
+    <header class="screen-header">
+      <div class="couple-badge">
+        <div class="couple-subtitle">Прямой эфир торжества</div>
+        <div class="couple-title">Максим <span>&</span> Полина</div>
+      </div>
+
+      <div class="qr-card">
+        <div class="qr-text">
+          <strong>Попади на экран!</strong>
+          <span>Наведи камеру, запиши кружок или отправь тост 🥂</span>
+        </div>
+        <canvas id="qr-canvas" width="112" height="112"></canvas>
+      </div>
+    </header>
+
+    <div class="center-monogram">
+      <div class="initials">М & П</div>
+      <p>Ждём ваши тёплые слова</p>
+    </div>
+
+    <div id="circles-stage"></div>
+
+    <div class="dj-controls">
+      <button class="dj-btn" id="copy-host-link-btn">📋 Ссылка ведущему</button>
+      <button class="dj-btn" id="sound-toggle-btn">🔇 Звук эфира: ВЫКЛ</button>
+      <button class="dj-btn" id="clear-screen-btn">Очистить экран</button>
+    </div>
+
+    <div class="ticker-bar">
+      <div class="ticker-label">Поздравления</div>
+      <div class="ticker-track-wrap">
+        <div class="ticker-track" id="ticker-track">
+          <span class="ticker-item"><strong>Ведущий</strong> Дорогие гости! Сканируйте QR-код в правом углу — ваши видеокружочки и пожелания сразу появятся здесь! 🥂✨<span class="ticker-dot">✦</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= МОБИЛЬНЫЙ ЭКРАН (ГОСТЬ / ВЕДУЩИЙ) ================= -->
+  <div id="mobile-view">
+    <div class="guest-card">
+      <div class="top-role-bar">
+        <span class="role-badge" id="role-label">Эфир для гостей</span>
+        <button class="role-switch-btn" id="toggle-host-mode-btn">🎤 Режим ведущего</button>
+      </div>
+
+      <div class="guest-header">
+        <h1>Максим & Полина</h1>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="video">🎥 Видеокружок</button>
+        <button class="tab-btn" data-tab="text">💌 Тост / Пожелание</button>
+      </div>
+
+      <div class="input-group">
+        <label for="guest-name" id="name-label">Ваше имя или номер стола</label>
+        <input type="text" id="guest-name" class="input-field" placeholder="Например: Аня, стол №3" maxlength="30" />
+        <div class="quick-chips" id="host-quick-chips">
+          <button type="button" class="chip-btn" data-val="Стол №1">Стол №1</button>
+          <button type="button" class="chip-btn" data-val="Стол №2">Стол №2</button>
+          <button type="button" class="chip-btn" data-val="Стол №3">Стол №3</button>
+          <button type="button" class="chip-btn" data-val="Друзья жениха">Друзья жениха</button>
+          <button type="button" class="chip-btn" data-val="Подруги невесты">Подруги невесты</button>
+          <button type="button" class="chip-btn" data-val="Родители">Родители</button>
+        </div>
+      </div>
+
+      <!-- Вкладка Видео -->
+      <div id="tab-video">
+        <div class="camera-box">
+          <div class="camera-inner">
+            <div class="timer-pill" id="rec-timer">До 15 сек</div>
+            <video id="preview-video" class="mirrored" autoplay playsinline muted></video>
+            <video id="recorded-video" playsinline loop></video>
+          </div>
+          <button type="button" class="flip-cam-btn" id="flip-cam-btn" title="Переключить камеру">🔄</button>
+        </div>
+
+        <button class="btn-primary" id="record-btn">● Записать кружок</button>
+        <button class="btn-primary" id="send-video-btn" style="display:none; background: var(--chocolate);">🚀 Отправить на большой экран</button>
+        <button class="btn-secondary" id="retake-btn" style="display:none;">Переснять</button>
+      </div>
+
+      <!-- Вкладка Текст -->
+      <div id="tab-text" style="display:none;">
+        <div class="input-group">
+          <label for="wish-text">Красивое пожелание (появится в бегущей строке)</label>
+          <textarea id="wish-text" class="input-field" rows="4" maxlength="160" placeholder="Горько! Любви, счастья и бесконечной нежности Максим и Полина! 🥂❤️"></textarea>
+          <div class="emoji-bar">
+            <button type="button" class="emoji-btn">🥂</button>
+            <button type="button" class="emoji-btn">❤️</button>
+            <button type="button" class="emoji-btn">💍</button>
+            <button type="button" class="emoji-btn">🎉</button>
+            <button type="button" class="emoji-btn">🔥</button>
+            <button type="button" class="emoji-btn">🍾</button>
+            <button type="button" class="emoji-btn">🥰</button>
+            <button type="button" class="emoji-btn">💐</button>
+          </div>
+        </div>
+        <button class="btn-primary" id="send-text-btn">✨ Отправить в бегущую строку</button>
+      </div>
+
+      <div class="status-msg" id="guest-status"></div>
+    </div>
+  </div>
+
+<script>
+  const SUPABASE_URL = 'https://fqyayuxuhvamgcyyenal.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_7OhGuxoPmZg7hl59qVjNkQ_YMdbAijf';
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const urlParams = new URLSearchParams(window.location.search);
+  const modeParam = urlParams.get('mode');
+
+  const blobUrlCache = new Map();
+
+  if (modeParam === 'guest' || modeParam === 'host') {
+    initMobileMode(modeParam === 'host');
+  } else {
+    initScreenMode();
+  }
+
+  // =========================================================================
+  // 1. ЛОГИКА ЭКРАНА ПРОЕКТОРА
+  // =========================================================================
+  function initScreenMode() {
+    document.getElementById('screen-view').style.display = 'block';
+
+    // Предупреждение, если открыто локально без HTTPS
+    if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      document.getElementById('local-warning').style.display = 'block';
+    }
+
+    // Чистая ссылка без лишних параметров для QR-кода гостей
+    const baseUrl = window.location.origin + window.location.pathname;
+    const guestUrl = `${baseUrl}?mode=guest`;
+    const hostUrl = `${baseUrl}?mode=host`;
+
+    new QRious({
+      element: document.getElementById('qr-canvas'),
+      value: guestUrl,
+      size: 112,
+      foreground: '#3B261D',
+      background: '#FFFFFF',
+      level: 'M'
+    });
+
+    // Кнопка копирования прямой ссылки для ведущего
+    const copyHostBtn = document.getElementById('copy-host-link-btn');
+    copyHostBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(hostUrl);
+        copyHostBtn.textContent = '✅ Ссылка скопирована!';
+        setTimeout(() => { copyHostBtn.textContent = '📋 Ссылка ведущему'; }, 2500);
+      } catch (e) {
+        prompt('Скопируйте ссылку для телефона ведущего:', hostUrl);
+      }
+    });
+
+    let soundEnabled = false;
+    const soundBtn = document.getElementById('sound-toggle-btn');
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = soundEnabled ? '🔊 Звук эфира: ВКЛ' : '🔇 Звук эфира: ВЫКЛ';
+    });
+
+    document.getElementById('clear-screen-btn').addEventListener('click', () => {
+      document.getElementById('circles-stage').innerHTML = '';
+    });
+
+    const stage = document.getElementById('circles-stage');
+    const tickerTrack = document.getElementById('ticker-track');
+    const MAX_CIRCLES = 10;
+    const activeCircles = [];
+    const wishesList = [
+      { guest_name: 'Ведущий', message: 'Друзья, наводите камеру на QR-код в углу — шлите видеокружочки и тосты прямо на экран! 🥂✨' }
+    ];
+
+    function renderTicker() {
+      const html = wishesList.slice(-18).map(w =>
+        `<span class="ticker-item"><strong>${escapeHtml(w.guest_name)}</strong> ${escapeHtml(w.message)}<span class="ticker-dot">✦</span></span>`
+      ).join('');
+      tickerTrack.innerHTML = html;
+      tickerTrack.style.animation = 'none';
+      tickerTrack.offsetHeight;
+      const duration = Math.max(22, wishesList.length * 9);
+      tickerTrack.style.animation = `marquee ${duration}s linear infinite`;
+    }
+
+    async function getCachedVideoSrc(url) {
+      if (blobUrlCache.has(url)) return blobUrlCache.get(url);
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const localUrl = URL.createObjectURL(blob);
+        blobUrlCache.set(url, localUrl);
+        return localUrl;
+      } catch (e) {
+        return url;
+      }
+    }
+
+    function getFreePosition() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const minX = 60, maxX = w - 290;
+      const minY = 175, maxY = h - 335;
+      return {
+        x: Math.floor(minX + Math.random() * Math.max(100, maxX - minX)),
+        y: Math.floor(minY + Math.random() * Math.max(100, maxY - minY))
+      };
+    }
+
+    async function spawnVideoCircle(item, isNew = true) {
+      const localSrc = await getCachedVideoSrc(item.video_url);
+      const wrap = document.createElement('div');
+      wrap.className = 'video-circle-wrap' + (isNew ? ' premiere' : '');
+
+      const pos = getFreePosition();
+      wrap.style.left = pos.x + 'px';
+      wrap.style.top = pos.y + 'px';
+
+      wrap.innerHTML = `
+        <div class="video-circle-ring">
+          <video src="${localSrc}" autoplay loop playsinline muted></video>
+        </div>
+        <div class="circle-author">${escapeHtml(item.guest_name)}</div>
+      `;
+
+      const videoEl = wrap.querySelector('video');
+      if (isNew && soundEnabled) {
+        videoEl.muted = false;
+      }
+      videoEl.play().catch(() => {});
+
+      stage.appendChild(wrap);
+      activeCircles.push(wrap);
+
+      if (isNew) {
+        setTimeout(() => {
+          wrap.classList.remove('premiere');
+          videoEl.muted = true;
+        }, 6500);
+      }
+
+      if (activeCircles.length > MAX_CIRCLES) {
+        const oldest = activeCircles.shift();
+        oldest.remove();
+      }
+    }
+
+    setInterval(() => {
+      activeCircles.forEach(el => {
+        if (el.classList.contains('premiere')) return;
+        const dx = (Math.random() - 0.5) * 70;
+        const dy = (Math.random() - 0.5) * 50;
+        const curX = parseFloat(el.style.left) || 200;
+        const curY = parseFloat(el.style.top) || 250;
+        const nextX = Math.min(window.innerWidth - 270, Math.max(50, curX + dx));
+        const nextY = Math.min(window.innerHeight - 325, Math.max(170, curY + dy));
+        el.style.left = nextX + 'px';
+        el.style.top = nextY + 'px';
+      });
+    }, 7000);
+
+    function handleIncomingItem(item, isNew = true) {
+      if (item.type === 'video' && item.video_url) {
+        spawnVideoCircle(item, isNew);
+      } else if (item.type === 'text' && item.message) {
+        wishesList.push(item);
+        renderTicker();
+      }
+    }
+
+    sb.from('wedding_feed')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(8)
+      .then(({ data }) => {
+        if (data) {
+          data.reverse().forEach(row => handleIncomingItem(row, false));
+        }
+      });
+
+    sb.channel('wedding-live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wedding_feed' }, payload => {
+        handleIncomingItem(payload.new, true);
+      })
+      .subscribe();
+  }
+
+  // =========================================================================
+  // 2. ЛОГИКА МОБИЛЬНОГО КЛИЕНТА (ГОСТЬ + РЕЖИМ ВЕДУЩЕГО)
+  // =========================================================================
+  function initMobileMode(initialHostMode) {
+    document.getElementById('mobile-view').style.display = 'flex';
+
+    let isHostMode = initialHostMode;
+    // Для ведущего удобнее сразу основная камера (снимать гостей), для гостя — фронтальная (селфи)
+    let facingMode = isHostMode ? 'environment' : 'user';
+
+    const roleLabel = document.getElementById('role-label');
+    const toggleHostBtn = document.getElementById('toggle-host-mode-btn');
+    const nameLabel = document.getElementById('name-label');
+    const nameInput = document.getElementById('guest-name');
+    const quickChips = document.getElementById('host-quick-chips');
+    const previewEl = document.getElementById('preview-video');
+    const recordedEl = document.getElementById('recorded-video');
+    const flipCamBtn = document.getElementById('flip-cam-btn');
+
+    function applyRoleUI() {
+      if (isHostMode) {
+        roleLabel.textContent = '🎤 Режим ведущего';
+        toggleHostBtn.textContent = 'Режим гостя';
+        toggleHostBtn.classList.add('host-active');
+        nameLabel.textContent = 'Кого снимаем (имя гостя или стол)';
+        nameInput.placeholder = 'Например: Тётя Лена / Стол №2';
+        nameInput.value = '';
+        quickChips.style.display = 'flex';
+      } else {
+        roleLabel.textContent = 'Свадебный эфир';
+        toggleHostBtn.textContent = '🎤 Я ведущий';
+        toggleHostBtn.classList.remove('host-active');
+        nameLabel.textContent = 'Ваше имя или номер стола';
+        nameInput.placeholder = 'Например: Аня, стол №3';
+        nameInput.value = localStorage.getItem('wedding_guest_name') || '';
+        quickChips.style.display = 'none';
+      }
+    }
+    applyRoleUI();
+
+    toggleHostBtn.addEventListener('click', () => {
+      isHostMode = !isHostMode;
+      applyRoleUI();
+      const targetFacing = isHostMode ? 'environment' : 'user';
+      if (facingMode !== targetFacing) {
+        facingMode = targetFacing;
+        startCamera();
+      }
+    });
+
+    nameInput.addEventListener('input', () => {
+      if (!isHostMode) {
+        localStorage.setItem('wedding_guest_name', nameInput.value);
+      }
+    });
+
+    // Быстрые кнопки выбора стола/гостей для ведущего
+    document.querySelectorAll('.chip-btn').forEach(chip => {
+      chip.addEventListener('click', () => {
+        nameInput.value = chip.dataset.val;
+      });
+    });
+
+    // Переключение вкладок Видео / Текст
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('tab-video').style.display = tab === 'video' ? 'block' : 'none';
+        document.getElementById('tab-text').style.display = tab === 'text' ? 'block' : 'none';
+        setStatus('');
+      });
+    });
+
+    // Вставка эмодзи в пожелание
+    const wishInput = document.getElementById('wish-text');
+    document.querySelectorAll('.emoji-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        wishInput.value += btn.textContent;
+        wishInput.focus();
+      });
+    });
+
+    const recordBtn = document.getElementById('record-btn');
+    const sendVideoBtn = document.getElementById('send-video-btn');
+    const retakeBtn = document.getElementById('retake-btn');
+    const timerPill = document.getElementById('rec-timer');
+
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordedBlob = null;
+    let chosenMime = '';
+    let recInterval = null;
+
+    function pickSupportedMime() {
+      const types = [
+        'video/mp4;codecs=h264,aac',
+        'video/mp4',
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm'
+      ];
+      for (const t of types) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+      }
+      return '';
+    }
+
+    async function startCamera() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+      }
+      // Зеркалим только фронтальную камеру
+      if (facingMode === 'user') {
+        previewEl.classList.add('mirrored');
+      } else {
+        previewEl.classList.remove('mirrored');
+      }
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode }, width: { ideal: 480 }, height: { ideal: 480 } },
+          audio: true
+        });
+        previewEl.srcObject = mediaStream;
+      } catch (err) {
+        // Фолбэк, если на устройстве только одна камера
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          previewEl.srcObject = mediaStream;
+        } catch (e2) {
+          setStatus('Разрешите доступ к камере и микрофону в браузере.');
+        }
+      }
+    }
+    startCamera();
+
+    flipCamBtn.addEventListener('click', () => {
+      facingMode = facingMode === 'user' ? 'environment' : 'user';
+      startCamera();
+    });
+
+    recordBtn.addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+        return;
+      }
+      if (!mediaStream) return;
+
+      recordedChunks = [];
+      chosenMime = pickSupportedMime();
+      const options = { videoBitsPerSecond: 1200000 };
+      if (chosenMime) options.mimeType = chosenMime;
+
+      mediaRecorder = new MediaRecorder(mediaStream, options);
+      mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+      };
+      mediaRecorder.onstop = () => {
+        const finalType = chosenMime || 'video/mp4';
+        recordedBlob = new Blob(recordedChunks, { type: finalType });
+        const url = URL.createObjectURL(recordedBlob);
+        previewEl.style.display = 'none';
+        flipCamBtn.style.display = 'none';
+        recordedEl.src = url;
+        recordedEl.style.display = 'block';
+        recordedEl.play();
+
+        recordBtn.style.display = 'none';
+        sendVideoBtn.style.display = 'block';
+        retakeBtn.style.display = 'block';
+        timerPill.textContent = 'Готово!';
+      };
+
+      mediaRecorder.start(250);
+      recordBtn.textContent = '■ Остановить запись';
+      recordBtn.classList.add('recording');
+
+      let sec = 15;
+      timerPill.textContent = `00:${sec < 10 ? '0' + sec : sec}`;
+      recInterval = setInterval(() => {
+        sec--;
+        timerPill.textContent = `00:${sec < 10 ? '0' + sec : sec}`;
+        if (sec <= 0) stopRecording();
+      }, 1000);
+    });
+
+    function stopRecording() {
+      clearInterval(recInterval);
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+      }
+      recordBtn.classList.remove('recording');
+      recordBtn.textContent = '● Записать кружок';
+    }
+
+    retakeBtn.addEventListener('click', () => {
+      recordedBlob = null;
+      recordedEl.pause();
+      recordedEl.style.display = 'none';
+      previewEl.style.display = 'block';
+      flipCamBtn.style.display = 'flex';
+      sendVideoBtn.style.display = 'none';
+      retakeBtn.style.display = 'none';
+      recordBtn.style.display = 'block';
+      timerPill.textContent = 'До 15 сек';
+      setStatus('');
+    });
+
+    sendVideoBtn.addEventListener('click', async () => {
+      const guestName = nameInput.value.trim() || (isHostMode ? 'Гости свадьбы' : 'Гость свадьбы');
+      if (!recordedBlob) return;
+
+      sendVideoBtn.disabled = true;
+      setStatus('Отправляем на экран...');
+
+      try {
+        const ext = (recordedBlob.type || '').includes('webm') ? 'webm' : 'mp4';
+        const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}.${ext}`;
+
+        const { error: uploadErr } = await sb.storage
+          .from('circles')
+          .upload(fileName, recordedBlob, { contentType: recordedBlob.type || 'video/mp4' });
+        if (uploadErr) throw uploadErr;
+
+        const { data: pub } = sb.storage.from('circles').getPublicUrl(fileName);
+
+        const { error: dbErr } = await sb.from('wedding_feed').insert({
+          guest_name: guestName,
+          type: 'video',
+          video_url: pub.publicUrl
+        });
+        if (dbErr) throw dbErr;
+
+        setStatus('Отправлено! Уже на большом экране ✨');
+        if (isHostMode) {
+          nameInput.value = ''; // Очищаем имя для следующего гостя
+        }
+        setTimeout(() => retakeBtn.click(), 1400);
+      } catch (err) {
+        console.error(err);
+        setStatus('Ошибка загрузки. Проверьте интернет.');
+      } finally {
+        sendVideoBtn.disabled = false;
+      }
+    });
+
+    const sendTextBtn = document.getElementById('send-text-btn');
+
+    sendTextBtn.addEventListener('click', async () => {
+      const guestName = nameInput.value.trim() || 'Гость свадьбы';
+      const message = wishInput.value.trim();
+      if (!message) {
+        setStatus('Напишите пару тёплых слов! 🥂');
+        return;
+      }
+
+      sendTextBtn.disabled = true;
+      setStatus('Отправляем в эфир...');
+
+      try {
+        const { error } = await sb.from('wedding_feed').insert({
+          guest_name: guestName,
+          type: 'text',
+          message
+        });
+        if (error) throw error;
+
+        wishInput.value = '';
+        if (isHostMode) nameInput.value = '';
+        setStatus('Пожелание уже летит в бегущей строке! 💌');
+      } catch (err) {
+        setStatus('Не удалось отправить. Попробуйте ещё раз.');
+      } finally {
+        sendTextBtn.disabled = false;
+      }
+    });
+  }
+
+  function setStatus(text) {
+    document.getElementById('guest-status').textContent = text;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
+</body>
+</html>
