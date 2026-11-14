@@ -51,16 +51,15 @@
       z-index: 5;
     }
 
-    /* Затемнение фона при открытии кружка/открытки в центре */
+    /* Затемнение фона строго ПОД увеличенным кружком (без размытия самого видео) */
     #spotlight-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(35, 22, 16, 0.58);
-      backdrop-filter: blur(5px);
+      background: rgba(35, 22, 16, 0.68);
       z-index: 38;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.3s ease;
     }
     #spotlight-backdrop.active {
       opacity: 1;
@@ -78,8 +77,7 @@
     }
 
     .couple-badge {
-      background: rgba(250, 247, 242, 0.85);
-      backdrop-filter: blur(10px);
+      background: rgba(250, 247, 242, 0.88);
       padding: 18px 30px;
       border-radius: 20px;
       border: 1px solid rgba(59, 38, 29, 0.14);
@@ -115,8 +113,7 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      background: rgba(250, 247, 242, 0.92);
-      backdrop-filter: blur(10px);
+      background: rgba(250, 247, 242, 0.94);
       padding: 14px 20px;
       border-radius: 20px;
       border: 1px solid rgba(59, 38, 29, 0.16);
@@ -170,8 +167,7 @@
       position: fixed;
       inset: 0;
       z-index: 90;
-      background: rgba(43, 28, 21, 0.88);
-      backdrop-filter: blur(12px);
+      background: rgba(43, 28, 21, 0.9);
       display: none;
       align-items: center;
       justify-content: center;
@@ -244,10 +240,11 @@
       cursor: pointer;
     }
 
+    /* Без z-index на контейнере, чтобы увеличенный элемент (z-index: 45) был строго выше затемнения (z-index: 38) */
     #circles-stage {
       position: absolute;
       inset: 0;
-      z-index: 10;
+      pointer-events: none;
     }
 
     .center-monogram {
@@ -282,9 +279,10 @@
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), left 0.9s ease, top 0.9s ease;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), left 0.85s ease, top 0.85s ease;
       z-index: 12;
       cursor: pointer;
+      pointer-events: auto;
     }
 
     .video-circle-wrap:hover {
@@ -295,7 +293,7 @@
     .video-circle-wrap.focused {
       left: 50% !important;
       top: 47% !important;
-      transform: translate(-50%, -50%) scale(1.7) !important;
+      transform: translate(-50%, -50%) scale(1.68) !important;
       z-index: 45 !important;
     }
 
@@ -305,7 +303,7 @@
       border-radius: 50%;
       padding: 6px;
       background: linear-gradient(135deg, var(--dusty-blue) 0%, var(--gold-accent) 50%, var(--chocolate) 100%);
-      box-shadow: 0 18px 45px rgba(59, 38, 29, 0.24);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
       overflow: hidden;
       position: relative;
       transform: translateZ(0);
@@ -320,7 +318,6 @@
       border-radius: 50%;
       background: var(--chocolate);
       display: block;
-      transform: translateZ(0);
     }
 
     .circle-author {
@@ -335,7 +332,7 @@
       font-size: 13px;
       font-weight: 600;
       white-space: nowrap;
-      box-shadow: 0 6px 16px rgba(59, 38, 29, 0.25);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
       border: 1.5px solid var(--milk);
       max-width: 220px;
       overflow: hidden;
@@ -343,7 +340,6 @@
       z-index: 5;
     }
 
-    /* Индикатор звука в режиме фокуса */
     .sound-pill-badge {
       display: none;
       position: absolute;
@@ -358,14 +354,13 @@
       font-weight: 700;
       white-space: nowrap;
       border: 1.5px solid #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 10;
     }
     .video-circle-wrap.focused .sound-pill-badge {
       display: block;
     }
 
-    /* Кнопка удаления отдельного кружка / открытки */
     .item-delete-btn {
       position: absolute;
       top: 4px;
@@ -374,7 +369,7 @@
       height: 30px;
       border-radius: 50%;
       border: 1.5px solid #fff;
-      background: rgba(192, 74, 62, 0.94);
+      background: rgba(192, 74, 62, 0.95);
       color: #fff;
       font-size: 13px;
       display: flex;
@@ -384,7 +379,7 @@
       opacity: 0;
       transition: opacity 0.2s, transform 0.15s;
       z-index: 15;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .video-circle-wrap:hover .item-delete-btn,
     .video-circle-wrap.focused .item-delete-btn,
@@ -404,13 +399,14 @@
       min-height: 165px;
       border-radius: 22px;
       padding: 20px 20px 24px;
-      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), left 0.9s ease, top 0.9s ease;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), left 0.85s ease, top 0.85s ease;
       z-index: 13;
       cursor: pointer;
+      pointer-events: auto;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 18px 40px rgba(59, 38, 29, 0.2);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
     }
 
     .postcard-wrap:hover {
@@ -455,7 +451,6 @@
       padding-top: 8px;
     }
 
-    /* 5 тем открыток */
     .card-theme-silk {
       background: linear-gradient(145deg, #FFFDF9 0%, #F4ECE1 100%);
       color: var(--chocolate);
@@ -599,8 +594,7 @@
     .guest-card {
       width: 100%;
       max-width: 430px;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.94);
       border-radius: 28px;
       padding: 20px 18px 24px;
       border: 1px solid rgba(59, 38, 29, 0.12);
@@ -728,7 +722,6 @@
     }
     .chip-btn:active { background: var(--dusty-blue); color: #fff; }
 
-    /* Выбор стиля открытки на телефоне */
     .card-style-picker {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -755,7 +748,6 @@
       box-shadow: 0 0 0 2.5px var(--chocolate);
     }
 
-    /* Предпросмотр открытки в телефоне */
     .mobile-card-preview {
       border-radius: 18px;
       padding: 16px;
@@ -779,7 +771,6 @@
       opacity: 0.5;
     }
 
-    /* Круглая камера */
     .camera-box {
       position: relative;
       width: 246px;
@@ -1065,7 +1056,6 @@
     initScreenMode();
   }
 
-  // Разбор темы открытки из текста (без изменения структуры БД)
   function parsePostcardMessage(rawMessage) {
     const str = String(rawMessage || '');
     const match = str.match(/^\[CARD:(silk|blue|choco|blush|gold)\]([\s\S]*)$/);
@@ -1085,7 +1075,6 @@
     const guestUrl = `${baseUrl}?mode=guest`;
     const hostUrl = `${baseUrl}?mode=host`;
 
-    // Маленький QR в углу
     new QRious({
       element: document.getElementById('qr-canvas'),
       value: guestUrl,
@@ -1095,7 +1084,6 @@
       level: 'M'
     });
 
-    // Крупный QR на весь экран
     new QRious({
       element: document.getElementById('qr-canvas-large'),
       value: guestUrl,
@@ -1105,7 +1093,6 @@
       level: 'M'
     });
 
-    // Открытие / закрытие полноэкранного QR-кода
     const qrModal = document.getElementById('qr-fullscreen-modal');
     const openQrModal = () => qrModal.classList.add('open');
     const closeQrModal = () => qrModal.classList.remove('open');
@@ -1117,7 +1104,6 @@
       if (e.target === qrModal) closeQrModal();
     });
 
-    // Копирование ссылки ведущего
     const copyHostBtn = document.getElementById('copy-host-link-btn');
     copyHostBtn.addEventListener('click', async () => {
       try {
@@ -1323,7 +1309,6 @@
       wrap.appendChild(ring);
       wrap.appendChild(authorEl);
 
-      // Клик по кружку: увеличиваем в центре и включаем звук
       wrap.addEventListener('click', () => focusElement(wrap));
 
       stage.appendChild(wrap);
@@ -1400,7 +1385,6 @@
       }
     }
 
-    // Сторожевой таймер бесконечного повтора видео
     setInterval(() => {
       activeElements.forEach(wrap => {
         const vid = wrap.querySelector('video');
@@ -1418,7 +1402,6 @@
       });
     }, 2000);
 
-    // Плавный дрейф элементов по экрану
     setInterval(() => {
       activeElements.forEach(el => {
         if (el.classList.contains('premiere') || el.classList.contains('focused')) return;
@@ -1540,7 +1523,6 @@
       });
     });
 
-    // Выбор дизайна открытки
     const cardPreviewBox = document.getElementById('mobile-card-preview');
     document.querySelectorAll('.style-swatch').forEach(swatch => {
       swatch.addEventListener('click', () => {
