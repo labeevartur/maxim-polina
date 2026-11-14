@@ -190,7 +190,6 @@
       height: 220px;
       border-radius: 50%;
       transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), left 1.2s ease, top 1.2s ease;
-      will-change: transform, left, top;
       z-index: 12;
     }
 
@@ -210,6 +209,9 @@
       box-shadow: 0 18px 45px rgba(59, 38, 29, 0.24);
       overflow: hidden;
       position: relative;
+      transform: translateZ(0);
+      -webkit-mask-image: -webkit-radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
     }
 
     .video-circle-ring video {
@@ -219,6 +221,7 @@
       border-radius: 50%;
       background: var(--chocolate);
       display: block;
+      transform: translateZ(0);
     }
 
     .circle-author {
@@ -238,6 +241,7 @@
       max-width: 220px;
       overflow: hidden;
       text-overflow: ellipsis;
+      z-index: 5;
     }
 
     /* Красивая бегущая строка пожеланий */
@@ -506,6 +510,7 @@
       overflow: hidden;
       background: #231712;
       position: relative;
+      transform: translateZ(0);
     }
 
     #preview-video, #recorded-video {
@@ -624,7 +629,7 @@
   <!-- ================= ЭКРАН ПРОЕКТОРА ================= -->
   <div id="screen-view">
     <div class="local-warning" id="local-warning">
-      ⚠️ Файл открыт локально с ПК! Загрузите его на Cloudflare Pages / сайт (HTTPS), чтобы QR-код открывался с телефонов.
+      ⚠️ Файл открыт локально с ПК! Загрузите его на сайт (HTTPS), чтобы QR-код открывался с телефонов.
     </div>
 
     <div class="screen-frame"></div>
@@ -702,8 +707,8 @@
         <div class="camera-box">
           <div class="camera-inner">
             <div class="timer-pill" id="rec-timer">До 15 сек</div>
-            <video id="preview-video" class="mirrored" autoplay playsinline muted></video>
-            <video id="recorded-video" playsinline loop></video>
+            <video id="preview-video" class="mirrored" autoplay playsinline webkit-playsinline muted></video>
+            <video id="recorded-video" playsinline webkit-playsinline loop></video>
           </div>
           <button type="button" class="flip-cam-btn" id="flip-cam-btn" title="Переключить камеру">🔄</button>
         </div>
@@ -744,8 +749,6 @@
   const urlParams = new URLSearchParams(window.location.search);
   const modeParam = urlParams.get('mode');
 
-  const blobUrlCache = new Map();
-
   if (modeParam === 'guest' || modeParam === 'host') {
     initMobileMode(modeParam === 'host');
   } else {
@@ -758,12 +761,10 @@
   function initScreenMode() {
     document.getElementById('screen-view').style.display = 'block';
 
-    // Предупреждение, если открыто локально без HTTPS
     if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       document.getElementById('local-warning').style.display = 'block';
     }
 
-    // Чистая ссылка без лишних параметров для QR-кода гостей
     const baseUrl = window.location.origin + window.location.pathname;
     const guestUrl = `${baseUrl}?mode=guest`;
     const hostUrl = `${baseUrl}?mode=host`;
@@ -777,7 +778,6 @@
       level: 'M'
     });
 
-    // Кнопка копирования прямой ссылки для ведущего
     const copyHostBtn = document.getElementById('copy-host-link-btn');
     copyHostBtn.addEventListener('click', async () => {
       try {
@@ -798,6 +798,7 @@
 
     document.getElementById('clear-screen-btn').addEventListener('click', () => {
       document.getElementById('circles-stage').innerHTML = '';
+      activeCircles.length = 0;
     });
 
     const stage = document.getElementById('circles-stage');
@@ -819,19 +820,6 @@
       tickerTrack.style.animation = `marquee ${duration}s linear infinite`;
     }
 
-    async function getCachedVideoSrc(url) {
-      if (blobUrlCache.has(url)) return blobUrlCache.get(url);
-      try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const localUrl = URL.createObjectURL(blob);
-        blobUrlCache.set(url, localUrl);
-        return localUrl;
-      } catch (e) {
-        return url;
-      }
-    }
-
     function getFreePosition() {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -843,8 +831,7 @@
       };
     }
 
-    async function spawnVideoCircle(item, isNew = true) {
-      const localSrc = await getCachedVideoSrc(item.video_url);
+    function spawnVideoCircle(item, isNew = true) {
       const wrap = document.createElement('div');
       wrap.className = 'video-circle-wrap' + (isNew ? ' premiere' : '');
 
@@ -852,31 +839,82 @@
       wrap.style.left = pos.x + 'px';
       wrap.style.top = pos.y + 'px';
 
-      wrap.innerHTML = `
-        <div class="video-circle-ring">
-          <video src="${localSrc}" autoplay loop playsinline muted></video>
-        </div>
-        <div class="circle-author">${escapeHtml(item.guest_name)}</div>
-      `;
+      const ring = document.createElement('div');
+      ring.className = 'video-circle-ring';
 
-      const videoEl = wrap.querySelector('video');
-      if (isNew && soundEnabled) {
-        videoEl.muted = false;
-      }
-      videoEl.play().catch(() => {});
+      const videoEl = document.createElement('video');
+      videoEl.src = item.video_url;
+      videoEl.autoplay = true;
+      videoEl.loop = true;
+      videoEl.playsInline = true;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.setAttribute('webkit-playsinline', '');
+      videoEl.preload = 'auto';
+      videoEl.muted = !(isNew && soundEnabled);
 
+      // Надёжный перезапуск для видео с MediaRecorder (чтобы круг не становился пустым после 1-го цикла)
+      videoEl.addEventListener('ended', () => {
+        try {
+          videoEl.currentTime = 0;
+          const playPromise = videoEl.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(() => {
+              videoEl.load();
+              videoEl.play().catch(() => {});
+            });
+          }
+        } catch (err) {
+          videoEl.load();
+          videoEl.play().catch(() => {});
+        }
+      });
+
+      // Страховка: если видео зависло в конце без события ended
+      videoEl.addEventListener('timeupdate', () => {
+        if (videoEl.duration && isFinite(videoEl.duration) && videoEl.duration > 0) {
+          if (videoEl.currentTime >= videoEl.duration - 0.15) {
+            videoEl.currentTime = 0;
+            videoEl.play().catch(() => {});
+          }
+        }
+      });
+
+      const authorEl = document.createElement('div');
+      authorEl.className = 'circle-author';
+      authorEl.textContent = item.guest_name;
+
+      ring.appendChild(videoEl);
+      wrap.appendChild(ring);
+      wrap.appendChild(authorEl);
       stage.appendChild(wrap);
       activeCircles.push(wrap);
+
+      videoEl.play().catch(() => {
+        videoEl.muted = true;
+        videoEl.play().catch(() => {});
+      });
 
       if (isNew) {
         setTimeout(() => {
           wrap.classList.remove('premiere');
           videoEl.muted = true;
+          // Принудительно поддерживаем воспроизведение после анимации уменьшения
+          setTimeout(() => {
+            if (videoEl.paused) {
+              videoEl.play().catch(() => {});
+            }
+          }, 150);
         }, 6500);
       }
 
       if (activeCircles.length > MAX_CIRCLES) {
         const oldest = activeCircles.shift();
+        const oldVid = oldest.querySelector('video');
+        if (oldVid) {
+          oldVid.pause();
+          oldVid.removeAttribute('src');
+          oldVid.load();
+        }
         oldest.remove();
       }
     }
@@ -892,6 +930,11 @@
         const nextY = Math.min(window.innerHeight - 325, Math.max(170, curY + dy));
         el.style.left = nextX + 'px';
         el.style.top = nextY + 'px';
+
+        const vid = el.querySelector('video');
+        if (vid && vid.paused) {
+          vid.play().catch(() => {});
+        }
       });
     }, 7000);
 
@@ -928,7 +971,6 @@
     document.getElementById('mobile-view').style.display = 'flex';
 
     let isHostMode = initialHostMode;
-    // Для ведущего удобнее сразу основная камера (снимать гостей), для гостя — фронтальная (селфи)
     let facingMode = isHostMode ? 'environment' : 'user';
 
     const roleLabel = document.getElementById('role-label');
@@ -977,14 +1019,12 @@
       }
     });
 
-    // Быстрые кнопки выбора стола/гостей для ведущего
     document.querySelectorAll('.chip-btn').forEach(chip => {
       chip.addEventListener('click', () => {
         nameInput.value = chip.dataset.val;
       });
     });
 
-    // Переключение вкладок Видео / Текст
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -996,7 +1036,6 @@
       });
     });
 
-    // Вставка эмодзи в пожелание
     const wishInput = document.getElementById('wish-text');
     document.querySelectorAll('.emoji-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1035,7 +1074,6 @@
       if (mediaStream) {
         mediaStream.getTracks().forEach(t => t.stop());
       }
-      // Зеркалим только фронтальную камеру
       if (facingMode === 'user') {
         previewEl.classList.add('mirrored');
       } else {
@@ -1049,7 +1087,6 @@
         });
         previewEl.srcObject = mediaStream;
       } catch (err) {
-        // Фолбэк, если на устройстве только одна камера
         try {
           mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
           previewEl.srcObject = mediaStream;
@@ -1159,7 +1196,7 @@
 
         setStatus('Отправлено! Уже на большом экране ✨');
         if (isHostMode) {
-          nameInput.value = ''; // Очищаем имя для следующего гостя
+          nameInput.value = '';
         }
         setTimeout(() => retakeBtn.click(), 1400);
       } catch (err) {
