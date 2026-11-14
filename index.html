@@ -40,6 +40,7 @@
         radial-gradient(circle at 85% 75%, rgba(197, 168, 128, 0.22), transparent 50%),
         linear-gradient(135deg, var(--milk) 0%, var(--beige) 100%);
       display: none;
+      user-select: none;
     }
 
     .screen-frame {
@@ -51,12 +52,12 @@
       z-index: 5;
     }
 
-    /* Затемнение фона строго ПОД увеличенным кружком (без размытия самого видео) */
+    /* Затемнение фона строго ПОД выбранным кружком (без размытия видео) */
     #spotlight-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(35, 22, 16, 0.68);
-      z-index: 38;
+      background: rgba(32, 20, 14, 0.68);
+      z-index: 40;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s ease;
@@ -77,7 +78,7 @@
     }
 
     .couple-badge {
-      background: rgba(250, 247, 242, 0.88);
+      background: rgba(250, 247, 242, 0.9);
       padding: 18px 30px;
       border-radius: 20px;
       border: 1px solid rgba(59, 38, 29, 0.14);
@@ -113,7 +114,7 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      background: rgba(250, 247, 242, 0.94);
+      background: rgba(250, 247, 242, 0.95);
       padding: 14px 20px;
       border-radius: 20px;
       border: 1px solid rgba(59, 38, 29, 0.16);
@@ -166,8 +167,8 @@
     #qr-fullscreen-modal {
       position: fixed;
       inset: 0;
-      z-index: 90;
-      background: rgba(43, 28, 21, 0.9);
+      z-index: 120;
+      background: rgba(43, 28, 21, 0.92);
       display: none;
       align-items: center;
       justify-content: center;
@@ -240,7 +241,6 @@
       cursor: pointer;
     }
 
-    /* Без z-index на контейнере, чтобы увеличенный элемент (z-index: 45) был строго выше затемнения (z-index: 38) */
     #circles-stage {
       position: absolute;
       inset: 0;
@@ -276,13 +276,22 @@
     /* ================= ВИДЕОКРУЖОК НА СЦЕНЕ ================= */
     .video-circle-wrap {
       position: absolute;
+      left: 0;
+      top: 0;
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), left 0.85s ease, top 0.85s ease;
-      z-index: 12;
-      cursor: pointer;
+      z-index: 15;
+      cursor: grab;
       pointer-events: auto;
+      touch-action: none;
+      will-change: transform;
+    }
+
+    .video-circle-wrap:active,
+    .video-circle-wrap.dragging {
+      cursor: grabbing;
+      z-index: 35 !important;
     }
 
     .video-circle-wrap:hover {
@@ -291,10 +300,7 @@
 
     .video-circle-wrap.premiere,
     .video-circle-wrap.focused {
-      left: 50% !important;
-      top: 47% !important;
-      transform: translate(-50%, -50%) scale(1.68) !important;
-      z-index: 45 !important;
+      z-index: 95 !important;
     }
 
     .video-circle-ring {
@@ -303,10 +309,9 @@
       border-radius: 50%;
       padding: 6px;
       background: linear-gradient(135deg, var(--dusty-blue) 0%, var(--gold-accent) 50%, var(--chocolate) 100%);
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.32);
+      box-shadow: 0 16px 40px rgba(59, 38, 29, 0.26);
       overflow: hidden;
       position: relative;
-      transform: translateZ(0);
       -webkit-mask-image: -webkit-radial-gradient(white, black);
       mask-image: radial-gradient(white, black);
     }
@@ -318,6 +323,7 @@
       border-radius: 50%;
       background: var(--chocolate);
       display: block;
+      pointer-events: none;
     }
 
     .circle-author {
@@ -338,6 +344,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       z-index: 5;
+      pointer-events: none;
     }
 
     .sound-pill-badge {
@@ -356,6 +363,7 @@
       border: 1.5px solid #fff;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 10;
+      pointer-events: none;
     }
     .video-circle-wrap.focused .sound-pill-badge {
       display: block;
@@ -395,18 +403,27 @@
     /* ================= СВАДЕБНЫЕ ОТКРЫТКИ НА СЦЕНЕ ================= */
     .postcard-wrap {
       position: absolute;
+      left: 0;
+      top: 0;
       width: 265px;
       min-height: 165px;
       border-radius: 22px;
       padding: 20px 20px 24px;
-      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), left 0.85s ease, top 0.85s ease;
-      z-index: 13;
-      cursor: pointer;
+      z-index: 16;
+      cursor: grab;
       pointer-events: auto;
+      touch-action: none;
+      will-change: transform;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .postcard-wrap:active,
+    .postcard-wrap.dragging {
+      cursor: grabbing;
+      z-index: 35 !important;
     }
 
     .postcard-wrap:hover {
@@ -415,10 +432,7 @@
 
     .postcard-wrap.premiere,
     .postcard-wrap.focused {
-      left: 50% !important;
-      top: 47% !important;
-      transform: translate(-50%, -50%) scale(1.55) !important;
-      z-index: 45 !important;
+      z-index: 95 !important;
     }
 
     .postcard-ornament {
@@ -431,6 +445,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      pointer-events: none;
     }
 
     .postcard-body {
@@ -440,6 +455,7 @@
       line-height: 1.25;
       word-break: break-word;
       margin-bottom: 12px;
+      pointer-events: none;
     }
 
     .postcard-footer {
@@ -449,6 +465,7 @@
       text-align: right;
       border-top: 1px solid currentColor;
       padding-top: 8px;
+      pointer-events: none;
     }
 
     .card-theme-silk {
@@ -1066,7 +1083,7 @@
   }
 
   // =========================================================================
-  // 1. ЛОГИКА ЭКРАНА ПРОЕКТОРА
+  // 1. ЛОГИКА ЭКРАНА ПРОЕКТОРА + ФИЗИКА МЯГКИХ СТОЛКНОВЕНИЙ И ПЕРЕТАСКИВАНИЯ
   // =========================================================================
   function initScreenMode() {
     document.getElementById('screen-view').style.display = 'block';
@@ -1126,34 +1143,37 @@
     const backdrop = document.getElementById('spotlight-backdrop');
     const tickerTrack = document.getElementById('ticker-track');
     const MAX_ITEMS = 12;
-    const activeElements = [];
+    const physicsEntities = [];
     const wishesList = [
       { guest_name: 'Ведущий', message: 'Друзья, наводите камеру на QR-код в углу — шлите видеокружочки и открытки прямо на экран! 🥂✨' }
     ];
 
-    let focusedElement = null;
+    let focusedEntity = null;
 
     function unfocusCurrent() {
-      if (!focusedElement) return;
-      focusedElement.classList.remove('focused');
-      const vid = focusedElement.querySelector('video');
+      if (!focusedEntity) return;
+      focusedEntity.isFocused = false;
+      focusedEntity.el.classList.remove('focused');
+      const vid = focusedEntity.el.querySelector('video');
       if (vid) vid.muted = true;
-      focusedElement = null;
+      focusedEntity = null;
       backdrop.classList.remove('active');
     }
 
-    function focusElement(el) {
-      if (focusedElement === el) {
+    function focusEntity(entity) {
+      if (focusedEntity === entity) {
         unfocusCurrent();
         return;
       }
       unfocusCurrent();
-      el.classList.remove('premiere');
-      el.classList.add('focused');
-      focusedElement = el;
+      entity.isPremiere = false;
+      entity.isFocused = true;
+      entity.el.classList.remove('premiere');
+      entity.el.classList.add('focused');
+      focusedEntity = entity;
       backdrop.classList.add('active');
 
-      const vid = el.querySelector('video');
+      const vid = entity.el.querySelector('video');
       if (vid) {
         vid.muted = false;
         vid.play().catch(() => {});
@@ -1171,27 +1191,27 @@
     document.getElementById('clear-screen-btn').addEventListener('click', () => {
       unfocusCurrent();
       stage.innerHTML = '';
-      activeElements.length = 0;
+      physicsEntities.length = 0;
     });
 
-    function removeElementFromStage(el) {
-      if (focusedElement === el) {
+    function removeEntity(entity) {
+      if (focusedEntity === entity) {
         unfocusCurrent();
       }
-      const idx = activeElements.indexOf(el);
-      if (idx !== -1) activeElements.splice(idx, 1);
+      const idx = physicsEntities.indexOf(entity);
+      if (idx !== -1) physicsEntities.splice(idx, 1);
 
-      const vid = el.querySelector('video');
+      const vid = entity.el.querySelector('video');
       if (vid) {
         vid.pause();
         vid.removeAttribute('src');
         vid.load();
       }
-      el.remove();
+      entity.el.remove();
     }
 
-    async function deleteItemCompletely(item, el) {
-      removeElementFromStage(el);
+    async function deleteItemCompletely(item, entity) {
+      removeEntity(entity);
       if (item && item.id) {
         try {
           await sb.from('wedding_feed').delete().eq('id', item.id);
@@ -1212,16 +1232,264 @@
       tickerTrack.style.animation = `marquee ${duration}s linear infinite`;
     }
 
-    function getFreePosition(itemWidth = 240, itemHeight = 240) {
+    function getSpawnPosition(radius) {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const minX = 55, maxX = Math.max(120, w - itemWidth - 60);
-      const minY = 170, maxY = Math.max(220, h - itemHeight - 125);
-      return {
-        x: Math.floor(minX + Math.random() * (maxX - minX)),
-        y: Math.floor(minY + Math.random() * (maxY - minY))
-      };
+      const minX = radius + 40;
+      const maxX = Math.max(minX + 60, w - radius - 40);
+      const minY = 175 + radius;
+      const maxY = Math.max(minY + 60, h - 120 - radius);
+
+      // Пробуем найти место подальше от существующих кружков
+      let bestX = (minX + maxX) / 2;
+      let bestY = (minY + maxY) / 2;
+      let bestDist = -1;
+
+      for (let attempt = 0; attempt < 15; attempt++) {
+        const cx = minX + Math.random() * (maxX - minX);
+        const cy = minY + Math.random() * (maxY - minY);
+        let minNeighbor = 99999;
+        for (const other of physicsEntities) {
+          const d = Math.hypot(cx - other.x, cy - other.y);
+          if (d < minNeighbor) minNeighbor = d;
+        }
+        if (minNeighbor > bestDist) {
+          bestDist = minNeighbor;
+          bestX = cx;
+          bestY = cy;
+        }
+      }
+      return { x: bestX, y: bestY };
     }
+
+    // Привязка перетаскивания мышкой / пальцем + распознавание клика
+    function attachDragAndClick(entity) {
+      const el = entity.el;
+      let isPointerDown = false;
+      let hasMoved = false;
+      let startClientX = 0;
+      let startClientY = 0;
+      let grabOffsetX = 0;
+      let grabOffsetY = 0;
+      let lastMoveX = 0;
+      let lastMoveY = 0;
+
+      el.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.item-delete-btn')) return;
+        isPointerDown = true;
+        hasMoved = false;
+        startClientX = e.clientX;
+        startClientY = e.clientY;
+        lastMoveX = e.clientX;
+        lastMoveY = e.clientY;
+        grabOffsetX = e.clientX - entity.x;
+        grabOffsetY = e.clientY - entity.y;
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+
+      el.addEventListener('pointermove', (e) => {
+        if (!isPointerDown) return;
+        const dxTotal = e.clientX - startClientX;
+        const dyTotal = e.clientY - startClientY;
+
+        if (!hasMoved && Math.hypot(dxTotal, dyTotal) > 6) {
+          hasMoved = true;
+          entity.isDragging = true;
+          el.classList.add('dragging');
+          // Если тянем увеличенный в центре кружок — возвращаем его в обычный режим
+          if (entity.isFocused) {
+            unfocusCurrent();
+          }
+          if (entity.isPremiere) {
+            entity.isPremiere = false;
+            el.classList.remove('premiere');
+          }
+        }
+
+        if (entity.isDragging) {
+          const nextX = e.clientX - grabOffsetX;
+          const nextY = e.clientY - grabOffsetY;
+          // Мягкая инерция при отпускании
+          entity.vx = (e.clientX - lastMoveX) * 0.25;
+          entity.vy = (e.clientY - lastMoveY) * 0.25;
+          entity.x = nextX;
+          entity.y = nextY;
+          lastMoveX = e.clientX;
+          lastMoveY = e.clientY;
+        }
+      });
+
+      const endPointer = (e) => {
+        if (!isPointerDown) return;
+        isPointerDown = false;
+        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+
+        if (entity.isDragging) {
+          entity.isDragging = false;
+          el.classList.remove('dragging');
+          // Ограничиваем максимальную скорость броска
+          const speed = Math.hypot(entity.vx, entity.vy);
+          if (speed > 4.5) {
+            entity.vx = (entity.vx / speed) * 4.5;
+            entity.vy = (entity.vy / speed) * 4.5;
+          }
+        } else if (!hasMoved) {
+          // Это был обычный клик — увеличиваем в центре и включаем звук
+          focusEntity(entity);
+        }
+      };
+
+      el.addEventListener('pointerup', endPointer);
+      el.addEventListener('pointercancel', endPointer);
+    }
+
+    // Главный 60fps цикл плавного движения и мягких столкновений
+    function updatePhysicsLoop() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const centerX = w / 2;
+      const centerY = h * 0.47;
+
+      // 1. Обновляем позиции и скорости
+      for (const ent of physicsEntities) {
+        if (ent.isFocused || ent.isPremiere) {
+          ent.x += (centerX - ent.x) * 0.14;
+          ent.y += (centerY - ent.y) * 0.14;
+          ent.scale += (ent.focusScale - ent.scale) * 0.14;
+          continue;
+        }
+
+        ent.scale += (1 - ent.scale) * 0.14;
+
+        if (ent.isDragging) continue;
+
+        // Лёгкое хаотичное блуждание, чтобы траектории были живыми и плавными
+        ent.wanderAngle += (Math.random() - 0.5) * 0.05;
+        ent.vx += Math.cos(ent.wanderAngle) * 0.008;
+        ent.vy += Math.sin(ent.wanderAngle) * 0.008;
+
+        // Плавное затухание после броска мышкой обратно к спокойной скорости
+        const speed = Math.hypot(ent.vx, ent.vy);
+        const targetCruise = ent.baseSpeed;
+        if (speed > targetCruise) {
+          ent.vx *= 0.975;
+          ent.vy *= 0.975;
+        } else if (speed < targetCruise * 0.6 && speed > 0.001) {
+          ent.vx = (ent.vx / speed) * (targetCruise * 0.6);
+          ent.vy = (ent.vy / speed) * (targetCruise * 0.6);
+        }
+
+        ent.x += ent.vx;
+        ent.y += ent.vy;
+
+        // Мягкое отталкивание от границ экрана (с учётом верхней шапки и нижней бегущей строки)
+        const minX = ent.radius + 26;
+        const maxX = w - ent.radius - 26;
+        const minY = 158 + ent.radius;
+        const maxY = h - 108 - ent.radius;
+
+        if (ent.x < minX) {
+          ent.x = minX;
+          ent.vx = Math.abs(ent.vx) * 0.85;
+          ent.wanderAngle = Math.atan2(ent.vy, ent.vx);
+        } else if (ent.x > maxX) {
+          ent.x = maxX;
+          ent.vx = -Math.abs(ent.vx) * 0.85;
+          ent.wanderAngle = Math.atan2(ent.vy, ent.vx);
+        }
+
+        if (ent.y < minY) {
+          ent.y = minY;
+          ent.vy = Math.abs(ent.vy) * 0.85;
+          ent.wanderAngle = Math.atan2(ent.vy, ent.vx);
+        } else if (ent.y > maxY) {
+          ent.y = maxY;
+          ent.vy = -Math.abs(ent.vy) * 0.85;
+          ent.wanderAngle = Math.atan2(ent.vy, ent.vx);
+        }
+
+        // Мягко обходим зону QR-кода в правом верхнем углу
+        const qrZoneLeft = w - 390;
+        const qrZoneBottom = 185;
+        if (ent.x + ent.radius > qrZoneLeft && ent.y - ent.radius < qrZoneBottom) {
+          ent.vx -= 0.04;
+          ent.vy += 0.04;
+        }
+      }
+
+      // 2. Мягкое упругое отталкивание между кружочками
+      for (let i = 0; i < physicsEntities.length; i++) {
+        for (let j = i + 1; j < physicsEntities.length; j++) {
+          const a = physicsEntities[i];
+          const b = physicsEntities[j];
+
+          const radA = a.radius * a.scale;
+          const radB = b.radius * b.scale;
+          const minDist = radA + radB + 14; // мягкий воздушный зазор 14px
+
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < minDist && dist > 0.001) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = minDist - dist;
+
+            // Пружинистое мягкое разведение без резких рывков
+            const cushionPush = overlap * 0.075;
+
+            const aPinned = a.isDragging || a.isFocused || a.isPremiere;
+            const bPinned = b.isDragging || b.isFocused || b.isPremiere;
+
+            if (!aPinned && !bPinned) {
+              a.x -= nx * cushionPush * 0.5;
+              a.y -= ny * cushionPush * 0.5;
+              b.x += nx * cushionPush * 0.5;
+              b.y += ny * cushionPush * 0.5;
+
+              // Мягкий обмен импульсами (упругий отскок)
+              const rvx = b.vx - a.vx;
+              const rvy = b.vy - a.vy;
+              const velAlongNormal = rvx * nx + rvy * ny;
+
+              if (velAlongNormal < 0) {
+                const restitution = 0.72; // коэффициент мягкости отскока
+                const impulse = -(1 + restitution) * velAlongNormal * 0.5;
+                a.vx -= impulse * nx;
+                a.vy -= impulse * ny;
+                b.vx += impulse * nx;
+                b.vy += impulse * ny;
+                a.wanderAngle = Math.atan2(a.vy, a.vx);
+                b.wanderAngle = Math.atan2(b.vy, b.vx);
+              }
+            } else if (aPinned && !bPinned) {
+              b.x += nx * cushionPush * 1.4;
+              b.y += ny * cushionPush * 1.4;
+              b.vx += nx * 0.18 + a.vx * 0.15;
+              b.vy += ny * 0.18 + a.vy * 0.15;
+              b.wanderAngle = Math.atan2(b.vy, b.vx);
+            } else if (!aPinned && bPinned) {
+              a.x -= nx * cushionPush * 1.4;
+              a.y -= ny * cushionPush * 1.4;
+              a.vx -= nx * 0.18 - b.vx * 0.15;
+              a.vy -= ny * 0.18 - b.vy * 0.15;
+              a.wanderAngle = Math.atan2(a.vy, a.vx);
+            }
+          }
+        }
+      }
+
+      // 3. Применяем координаты к DOM через GPU-ускоренный translate3d
+      for (const ent of physicsEntities) {
+        const renderX = ent.x - ent.halfW;
+        const renderY = ent.y - ent.halfH;
+        ent.el.style.transform = `translate3d(${renderX.toFixed(1)}px, ${renderY.toFixed(1)}px, 0) scale(${ent.scale.toFixed(3)})`;
+      }
+
+      requestAnimationFrame(updatePhysicsLoop);
+    }
+    requestAnimationFrame(updatePhysicsLoop);
 
     async function loadLocalBlobUrl(remoteUrl) {
       if (videoBlobCache.has(remoteUrl)) {
@@ -1258,13 +1526,33 @@
     async function spawnVideoCircle(item, isNew = true) {
       const playableSrc = await loadLocalBlobUrl(item.video_url);
 
+      const startPremiere = isNew && !focusedEntity;
       const wrap = document.createElement('div');
-      wrap.className = 'video-circle-wrap' + (isNew && !focusedElement ? ' premiere' : '');
+      wrap.className = 'video-circle-wrap' + (startPremiere ? ' premiere' : '');
       if (item.id) wrap.dataset.itemId = String(item.id);
 
-      const pos = getFreePosition(220, 220);
-      wrap.style.left = pos.x + 'px';
-      wrap.style.top = pos.y + 'px';
+      const radius = 112;
+      const pos = getSpawnPosition(radius);
+      const angle = Math.random() * Math.PI * 2;
+      const baseSpeed = 0.38 + Math.random() * 0.25;
+
+      const entity = {
+        el: wrap,
+        x: startPremiere ? window.innerWidth / 2 : pos.x,
+        y: startPremiere ? window.innerHeight * 0.47 : pos.y,
+        vx: Math.cos(angle) * baseSpeed,
+        vy: Math.sin(angle) * baseSpeed,
+        wanderAngle: angle,
+        baseSpeed,
+        radius,
+        halfW: 110,
+        halfH: 110,
+        scale: startPremiere ? 1.68 : 0.3,
+        focusScale: 1.68,
+        isDragging: false,
+        isFocused: false,
+        isPremiere: startPremiere
+      };
 
       const soundBadge = document.createElement('div');
       soundBadge.className = 'sound-pill-badge';
@@ -1277,7 +1565,7 @@
       delBtn.textContent = '🗑';
       delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteItemCompletely(item, wrap);
+        deleteItemCompletely(item, entity);
       });
 
       const ring = document.createElement('div');
@@ -1290,7 +1578,7 @@
       videoEl.setAttribute('playsinline', '');
       videoEl.setAttribute('webkit-playsinline', '');
       videoEl.preload = 'auto';
-      videoEl.muted = !(isNew && autoSoundEnabled && !focusedElement);
+      videoEl.muted = !(startPremiere && autoSoundEnabled);
       videoEl.src = playableSrc;
       videoEl.dataset.playableSrc = playableSrc;
       videoEl.dataset.lastTime = '-1';
@@ -1309,22 +1597,27 @@
       wrap.appendChild(ring);
       wrap.appendChild(authorEl);
 
-      wrap.addEventListener('click', () => focusElement(wrap));
+      attachDragAndClick(entity);
 
       stage.appendChild(wrap);
-      activeElements.push(wrap);
+      physicsEntities.push(entity);
 
       videoEl.play().catch(() => {
         videoEl.muted = true;
         videoEl.play().catch(() => {});
       });
 
-      if (isNew && !focusedElement) {
+      if (startPremiere) {
         setTimeout(() => {
+          entity.isPremiere = false;
           wrap.classList.remove('premiere');
-          if (focusedElement !== wrap) {
+          if (!entity.isFocused) {
             videoEl.muted = true;
           }
+          // После премьеры мягко отправляем в свободное плавание
+          const exitAngle = Math.random() * Math.PI * 2;
+          entity.vx = Math.cos(exitAngle) * 1.4;
+          entity.vy = Math.sin(exitAngle) * 1.4;
         }, 6500);
       }
 
@@ -1333,14 +1626,34 @@
 
     function spawnPostcard(item, isNew = true) {
       const parsed = parsePostcardMessage(item.message);
+      const startPremiere = isNew && !focusedEntity;
 
       const wrap = document.createElement('div');
-      wrap.className = `postcard-wrap card-theme-${parsed.theme}` + (isNew && !focusedElement ? ' premiere' : '');
+      wrap.className = `postcard-wrap card-theme-${parsed.theme}` + (startPremiere ? ' premiere' : '');
       if (item.id) wrap.dataset.itemId = String(item.id);
 
-      const pos = getFreePosition(265, 175);
-      wrap.style.left = pos.x + 'px';
-      wrap.style.top = pos.y + 'px';
+      const radius = 128;
+      const pos = getSpawnPosition(radius);
+      const angle = Math.random() * Math.PI * 2;
+      const baseSpeed = 0.32 + Math.random() * 0.2;
+
+      const entity = {
+        el: wrap,
+        x: startPremiere ? window.innerWidth / 2 : pos.x,
+        y: startPremiere ? window.innerHeight * 0.47 : pos.y,
+        vx: Math.cos(angle) * baseSpeed,
+        vy: Math.sin(angle) * baseSpeed,
+        wanderAngle: angle,
+        baseSpeed,
+        radius,
+        halfW: 132.5,
+        halfH: 85,
+        scale: startPremiere ? 1.52 : 0.3,
+        focusScale: 1.52,
+        isDragging: false,
+        isFocused: false,
+        isPremiere: startPremiere
+      };
 
       const delBtn = document.createElement('button');
       delBtn.type = 'button';
@@ -1349,7 +1662,7 @@
       delBtn.textContent = '🗑';
       delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteItemCompletely(item, wrap);
+        deleteItemCompletely(item, entity);
       });
 
       wrap.innerHTML = `
@@ -1362,14 +1675,18 @@
       `;
       wrap.appendChild(delBtn);
 
-      wrap.addEventListener('click', () => focusElement(wrap));
+      attachDragAndClick(entity);
 
       stage.appendChild(wrap);
-      activeElements.push(wrap);
+      physicsEntities.push(entity);
 
-      if (isNew && !focusedElement) {
+      if (startPremiere) {
         setTimeout(() => {
+          entity.isPremiere = false;
           wrap.classList.remove('premiere');
+          const exitAngle = Math.random() * Math.PI * 2;
+          entity.vx = Math.cos(exitAngle) * 1.3;
+          entity.vy = Math.sin(exitAngle) * 1.3;
         }, 6000);
       }
 
@@ -1377,17 +1694,18 @@
     }
 
     function trimOverflowItems() {
-      while (activeElements.length > MAX_ITEMS) {
-        const candidateIdx = activeElements.findIndex(el => el !== focusedElement);
+      while (physicsEntities.length > MAX_ITEMS) {
+        const candidateIdx = physicsEntities.findIndex(ent => !ent.isFocused && !ent.isDragging);
         if (candidateIdx === -1) break;
-        const [oldest] = activeElements.splice(candidateIdx, 1);
-        removeElementFromStage(oldest);
+        const oldest = physicsEntities[candidateIdx];
+        removeEntity(oldest);
       }
     }
 
+    // Сторожевой таймер бесконечного повтора видео
     setInterval(() => {
-      activeElements.forEach(wrap => {
-        const vid = wrap.querySelector('video');
+      physicsEntities.forEach(ent => {
+        const vid = ent.el.querySelector('video');
         if (!vid || !vid.dataset.playableSrc) return;
 
         const prevTime = parseFloat(vid.dataset.lastTime);
@@ -1401,20 +1719,6 @@
         }
       });
     }, 2000);
-
-    setInterval(() => {
-      activeElements.forEach(el => {
-        if (el.classList.contains('premiere') || el.classList.contains('focused')) return;
-        const dx = (Math.random() - 0.5) * 70;
-        const dy = (Math.random() - 0.5) * 50;
-        const curX = parseFloat(el.style.left) || 200;
-        const curY = parseFloat(el.style.top) || 250;
-        const nextX = Math.min(window.innerWidth - 290, Math.max(50, curX + dx));
-        const nextY = Math.min(window.innerHeight - 325, Math.max(170, curY + dy));
-        el.style.left = nextX + 'px';
-        el.style.top = nextY + 'px';
-      });
-    }, 7000);
 
     function handleIncomingItem(item, isNew = true) {
       if (item.type === 'video' && item.video_url) {
@@ -1443,8 +1747,8 @@
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'wedding_feed' }, payload => {
         if (payload.old && payload.old.id) {
-          const target = activeElements.find(el => el.dataset.itemId === String(payload.old.id));
-          if (target) removeElementFromStage(target);
+          const target = physicsEntities.find(ent => ent.el.dataset.itemId === String(payload.old.id));
+          if (target) removeEntity(target);
         }
       })
       .subscribe();
