@@ -51,21 +51,20 @@
       z-index: 5;
     }
 
-    .local-warning {
-      display: none;
+    /* Затемнение фона при открытии кружка/открытки в центре */
+    #spotlight-backdrop {
       position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #C04A3E;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      z-index: 100;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      text-align: center;
+      inset: 0;
+      background: rgba(35, 22, 16, 0.58);
+      backdrop-filter: blur(5px);
+      z-index: 38;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    #spotlight-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .screen-header {
@@ -122,11 +121,17 @@
       border-radius: 20px;
       border: 1px solid rgba(59, 38, 29, 0.16);
       box-shadow: 0 12px 32px rgba(59, 38, 29, 0.08);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .qr-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(59, 38, 29, 0.14);
     }
 
     .qr-text {
       text-align: right;
-      max-width: 195px;
+      max-width: 200px;
     }
 
     .qr-text strong {
@@ -145,11 +150,98 @@
       display: block;
     }
 
+    .qr-expand-hint {
+      display: inline-block;
+      margin-top: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--dusty-blue-dark);
+    }
+
     #qr-canvas {
       border-radius: 10px;
       background: #fff;
       padding: 6px;
       border: 1px solid var(--beige-dark);
+    }
+
+    /* Полноэкранный модал QR-кода */
+    #qr-fullscreen-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(43, 28, 21, 0.88);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #qr-fullscreen-modal.open {
+      display: flex;
+    }
+
+    .qr-modal-box {
+      background: linear-gradient(145deg, var(--milk) 0%, var(--beige) 100%);
+      border: 2px solid var(--gold-accent);
+      border-radius: 36px;
+      padding: 40px 48px;
+      text-align: center;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      position: relative;
+      animation: popIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .qr-modal-box .tag {
+      font-size: 13px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--dusty-blue-dark);
+      font-weight: 700;
+    }
+
+    .qr-modal-box h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 48px;
+      color: var(--chocolate);
+      margin: 6px 0 18px;
+      line-height: 1;
+    }
+
+    #qr-canvas-large {
+      background: #fff;
+      padding: 16px;
+      border-radius: 24px;
+      border: 2px solid var(--beige-dark);
+      box-shadow: 0 14px 35px rgba(59, 38, 29, 0.12);
+      margin: 0 auto 20px;
+      display: block;
+    }
+
+    .qr-modal-box p {
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--chocolate-soft);
+      margin-bottom: 22px;
+    }
+
+    .qr-close-btn {
+      background: var(--chocolate);
+      color: var(--milk);
+      border: none;
+      padding: 12px 32px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     #circles-stage {
@@ -184,20 +276,27 @@
       margin-top: 8px;
     }
 
+    /* ================= ВИДЕОКРУЖОК НА СЦЕНЕ ================= */
     .video-circle-wrap {
       position: absolute;
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), left 1.2s ease, top 1.2s ease;
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), left 0.9s ease, top 0.9s ease;
       z-index: 12;
+      cursor: pointer;
     }
 
-    .video-circle-wrap.premiere {
+    .video-circle-wrap:hover {
+      z-index: 28;
+    }
+
+    .video-circle-wrap.premiere,
+    .video-circle-wrap.focused {
       left: 50% !important;
       top: 47% !important;
-      transform: translate(-50%, -50%) scale(1.65) !important;
-      z-index: 40 !important;
+      transform: translate(-50%, -50%) scale(1.7) !important;
+      z-index: 45 !important;
     }
 
     .video-circle-ring {
@@ -244,7 +343,146 @@
       z-index: 5;
     }
 
-    /* Красивая бегущая строка пожеланий */
+    /* Индикатор звука в режиме фокуса */
+    .sound-pill-badge {
+      display: none;
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dusty-blue-dark);
+      color: #fff;
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1.5px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 10;
+    }
+    .video-circle-wrap.focused .sound-pill-badge {
+      display: block;
+    }
+
+    /* Кнопка удаления отдельного кружка / открытки */
+    .item-delete-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+      background: rgba(192, 74, 62, 0.94);
+      color: #fff;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.15s;
+      z-index: 15;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+    }
+    .video-circle-wrap:hover .item-delete-btn,
+    .video-circle-wrap.focused .item-delete-btn,
+    .postcard-wrap:hover .item-delete-btn,
+    .postcard-wrap.focused .item-delete-btn {
+      opacity: 1;
+    }
+    .item-delete-btn:hover {
+      transform: scale(1.12);
+      background: #A93226;
+    }
+
+    /* ================= СВАДЕБНЫЕ ОТКРЫТКИ НА СЦЕНЕ ================= */
+    .postcard-wrap {
+      position: absolute;
+      width: 265px;
+      min-height: 165px;
+      border-radius: 22px;
+      padding: 20px 20px 24px;
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), left 0.9s ease, top 0.9s ease;
+      z-index: 13;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 18px 40px rgba(59, 38, 29, 0.2);
+    }
+
+    .postcard-wrap:hover {
+      z-index: 29;
+    }
+
+    .postcard-wrap.premiere,
+    .postcard-wrap.focused {
+      left: 50% !important;
+      top: 47% !important;
+      transform: translate(-50%, -50%) scale(1.55) !important;
+      z-index: 45 !important;
+    }
+
+    .postcard-ornament {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.72;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .postcard-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.25;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .postcard-footer {
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0.88;
+      text-align: right;
+      border-top: 1px solid currentColor;
+      padding-top: 8px;
+    }
+
+    /* 5 тем открыток */
+    .card-theme-silk {
+      background: linear-gradient(145deg, #FFFDF9 0%, #F4ECE1 100%);
+      color: var(--chocolate);
+      border: 2px solid var(--gold-accent);
+    }
+    .card-theme-blue {
+      background: linear-gradient(145deg, #EDF4F8 0%, #D5E4EC 100%);
+      color: #243B47;
+      border: 2px solid var(--dusty-blue);
+    }
+    .card-theme-choco {
+      background: linear-gradient(145deg, #4A3025 0%, #2D1C15 100%);
+      color: #FAF4EB;
+      border: 2px solid var(--gold-accent);
+    }
+    .card-theme-blush {
+      background: linear-gradient(145deg, #FDF3F2 0%, #F5DFDC 100%);
+      color: #4D2826;
+      border: 2px solid #D49B96;
+    }
+    .card-theme-gold {
+      background: linear-gradient(145deg, #FBF5E8 0%, #EEDCB9 100%);
+      color: #463219;
+      border: 2px solid #B89254;
+    }
+
+    /* Бегущая строка пожеланий внизу */
     .ticker-bar {
       position: absolute;
       bottom: 30px;
@@ -331,7 +569,7 @@
       z-index: 35;
       display: flex;
       gap: 8px;
-      opacity: 0.55;
+      opacity: 0.72;
       transition: opacity 0.25s;
     }
     .dj-controls:hover { opacity: 1; }
@@ -470,7 +708,6 @@
       border-color: var(--dusty-blue);
     }
 
-    /* Быстрые чипсы для ведущего */
     .quick-chips {
       display: none;
       flex-wrap: wrap;
@@ -490,6 +727,57 @@
       cursor: pointer;
     }
     .chip-btn:active { background: var(--dusty-blue); color: #fff; }
+
+    /* Выбор стиля открытки на телефоне */
+    .card-style-picker {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .style-swatch {
+      height: 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 700;
+      transition: transform 0.15s, box-shadow 0.15s;
+      opacity: 0.72;
+    }
+    .style-swatch.selected {
+      opacity: 1;
+      transform: scale(1.06);
+      box-shadow: 0 0 0 2.5px var(--chocolate);
+    }
+
+    /* Предпросмотр открытки в телефоне */
+    .mobile-card-preview {
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.25s ease;
+    }
+    .mobile-card-preview textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: inherit;
+    }
+    .mobile-card-preview textarea::placeholder {
+      color: inherit;
+      opacity: 0.5;
+    }
 
     /* Круглая камера */
     .camera-box {
@@ -561,7 +849,6 @@
       box-shadow: 0 6px 16px rgba(0,0,0,0.28);
     }
 
-    /* Панель эмодзи для текстовых пожеланий */
     .emoji-bar {
       display: flex;
       justify-content: space-between;
@@ -628,10 +915,7 @@
 
   <!-- ================= ЭКРАН ПРОЕКТОРА ================= -->
   <div id="screen-view">
-    <div class="local-warning" id="local-warning">
-      ⚠️ Файл открыт локально с ПК! Загрузите его на сайт (HTTPS), чтобы QR-код открывался с телефонов.
-    </div>
-
+    <div id="spotlight-backdrop"></div>
     <div class="screen-frame"></div>
 
     <header class="screen-header">
@@ -640,14 +924,26 @@
         <div class="couple-title">Максим <span>&</span> Полина</div>
       </div>
 
-      <div class="qr-card">
+      <div class="qr-card" id="open-qr-modal-card" title="Нажмите, чтобы открыть QR-код на весь экран">
         <div class="qr-text">
           <strong>Попади на экран!</strong>
-          <span>Наведи камеру, запиши кружок или отправь тост 🥂</span>
+          <span>Наведи камеру, запиши кружок или отправь открытку 🥂</span>
+          <span class="qr-expand-hint">🔍 Нажмите, чтобы увеличить</span>
         </div>
         <canvas id="qr-canvas" width="112" height="112"></canvas>
       </div>
     </header>
+
+    <!-- Модальное окно QR-кода на весь экран -->
+    <div id="qr-fullscreen-modal">
+      <div class="qr-modal-box">
+        <div class="tag">Живой эфир свадьбы</div>
+        <h2>Максим & Полина</h2>
+        <canvas id="qr-canvas-large" width="320" height="320"></canvas>
+        <p>Откройте камеру телефона, наведите на QR-код и отправьте свой <strong>видеокружок</strong> или <strong>свадебную открытку</strong> прямо на экран!</p>
+        <button type="button" class="qr-close-btn" id="close-qr-modal-btn">✕ Вернуться к эфиру</button>
+      </div>
+    </div>
 
     <div class="center-monogram">
       <div class="initials">М & П</div>
@@ -657,8 +953,9 @@
     <div id="circles-stage"></div>
 
     <div class="dj-controls">
+      <button class="dj-btn" id="fullscreen-qr-btn">🔍 QR на весь экран</button>
       <button class="dj-btn" id="copy-host-link-btn">📋 Ссылка ведущему</button>
-      <button class="dj-btn" id="sound-toggle-btn">🔇 Звук эфира: ВЫКЛ</button>
+      <button class="dj-btn" id="sound-toggle-btn">🔇 Автозвук: ВЫКЛ</button>
       <button class="dj-btn" id="clear-screen-btn">Очистить экран</button>
     </div>
 
@@ -666,7 +963,7 @@
       <div class="ticker-label">Поздравления</div>
       <div class="ticker-track-wrap">
         <div class="ticker-track" id="ticker-track">
-          <span class="ticker-item"><strong>Ведущий</strong> Дорогие гости! Сканируйте QR-код в правом углу — ваши видеокружочки и пожелания сразу появятся здесь! 🥂✨<span class="ticker-dot">✦</span></span>
+          <span class="ticker-item"><strong>Ведущий</strong> Дорогие гости! Сканируйте QR-код в правом углу — ваши видеокружочки и открытки сразу появятся здесь! 🥂✨<span class="ticker-dot">✦</span></span>
         </div>
       </div>
     </div>
@@ -686,7 +983,7 @@
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="video">🎥 Видеокружок</button>
-        <button class="tab-btn" data-tab="text">💌 Тост / Пожелание</button>
+        <button class="tab-btn" data-tab="text">💌 Открытка</button>
       </div>
 
       <div class="input-group">
@@ -708,7 +1005,7 @@
           <div class="camera-inner">
             <div class="timer-pill" id="rec-timer">До 15 сек</div>
             <video id="preview-video" class="mirrored" autoplay playsinline webkit-playsinline muted></video>
-            <video id="recorded-video" playsinline webkit-playsinline loop></video>
+            <video id="recorded-video" playsinline webkit-playsinline></video>
           </div>
           <button type="button" class="flip-cam-btn" id="flip-cam-btn" title="Переключить камеру">🔄</button>
         </div>
@@ -718,11 +1015,22 @@
         <button class="btn-secondary" id="retake-btn" style="display:none;">Переснять</button>
       </div>
 
-      <!-- Вкладка Текст -->
+      <!-- Вкладка Открытка -->
       <div id="tab-text" style="display:none;">
         <div class="input-group">
-          <label for="wish-text">Красивое пожелание (появится в бегущей строке)</label>
-          <textarea id="wish-text" class="input-field" rows="4" maxlength="160" placeholder="Горько! Любви, счастья и бесконечной нежности Максим и Полина! 🥂❤️"></textarea>
+          <label>Выберите дизайн открытки</label>
+          <div class="card-style-picker" id="card-style-picker">
+            <div class="style-swatch card-theme-silk selected" data-theme="silk" title="Молочный шёлк">М&П</div>
+            <div class="style-swatch card-theme-blue" data-theme="blue" title="Пыльно-голубая">М&П</div>
+            <div class="style-swatch card-theme-choco" data-theme="choco" title="Шоколад и золото">М&П</div>
+            <div class="style-swatch card-theme-blush" data-theme="blush" title="Нежный румянец">М&П</div>
+            <div class="style-swatch card-theme-gold" data-theme="gold" title="Золотой пергамент">М&П</div>
+          </div>
+
+          <div class="mobile-card-preview card-theme-silk" id="mobile-card-preview">
+            <textarea id="wish-text" rows="4" maxlength="160" placeholder="Напишите тёплое поздравление для Максима и Полины... 🥂❤️"></textarea>
+          </div>
+
           <div class="emoji-bar">
             <button type="button" class="emoji-btn">🥂</button>
             <button type="button" class="emoji-btn">❤️</button>
@@ -734,7 +1042,7 @@
             <button type="button" class="emoji-btn">💐</button>
           </div>
         </div>
-        <button class="btn-primary" id="send-text-btn">✨ Отправить в бегущую строку</button>
+        <button class="btn-primary" id="send-text-btn">💌 Отправить открытку на экран</button>
       </div>
 
       <div class="status-msg" id="guest-status"></div>
@@ -749,10 +1057,22 @@
   const urlParams = new URLSearchParams(window.location.search);
   const modeParam = urlParams.get('mode');
 
+  const videoBlobCache = new Map();
+
   if (modeParam === 'guest' || modeParam === 'host') {
     initMobileMode(modeParam === 'host');
   } else {
     initScreenMode();
+  }
+
+  // Разбор темы открытки из текста (без изменения структуры БД)
+  function parsePostcardMessage(rawMessage) {
+    const str = String(rawMessage || '');
+    const match = str.match(/^\[CARD:(silk|blue|choco|blush|gold)\]([\s\S]*)$/);
+    if (match) {
+      return { theme: match[1], text: match[2].trim() };
+    }
+    return { theme: 'silk', text: str };
   }
 
   // =========================================================================
@@ -761,14 +1081,11 @@
   function initScreenMode() {
     document.getElementById('screen-view').style.display = 'block';
 
-    if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      document.getElementById('local-warning').style.display = 'block';
-    }
-
     const baseUrl = window.location.origin + window.location.pathname;
     const guestUrl = `${baseUrl}?mode=guest`;
     const hostUrl = `${baseUrl}?mode=host`;
 
+    // Маленький QR в углу
     new QRious({
       element: document.getElementById('qr-canvas'),
       value: guestUrl,
@@ -778,6 +1095,29 @@
       level: 'M'
     });
 
+    // Крупный QR на весь экран
+    new QRious({
+      element: document.getElementById('qr-canvas-large'),
+      value: guestUrl,
+      size: 320,
+      foreground: '#3B261D',
+      background: '#FFFFFF',
+      level: 'M'
+    });
+
+    // Открытие / закрытие полноэкранного QR-кода
+    const qrModal = document.getElementById('qr-fullscreen-modal');
+    const openQrModal = () => qrModal.classList.add('open');
+    const closeQrModal = () => qrModal.classList.remove('open');
+
+    document.getElementById('open-qr-modal-card').addEventListener('click', openQrModal);
+    document.getElementById('fullscreen-qr-btn').addEventListener('click', openQrModal);
+    document.getElementById('close-qr-modal-btn').addEventListener('click', closeQrModal);
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) closeQrModal();
+    });
+
+    // Копирование ссылки ведущего
     const copyHostBtn = document.getElementById('copy-host-link-btn');
     copyHostBtn.addEventListener('click', async () => {
       try {
@@ -789,25 +1129,91 @@
       }
     });
 
-    let soundEnabled = false;
+    let autoSoundEnabled = false;
     const soundBtn = document.getElementById('sound-toggle-btn');
     soundBtn.addEventListener('click', () => {
-      soundEnabled = !soundEnabled;
-      soundBtn.textContent = soundEnabled ? '🔊 Звук эфира: ВКЛ' : '🔇 Звук эфира: ВЫКЛ';
-    });
-
-    document.getElementById('clear-screen-btn').addEventListener('click', () => {
-      document.getElementById('circles-stage').innerHTML = '';
-      activeCircles.length = 0;
+      autoSoundEnabled = !autoSoundEnabled;
+      soundBtn.textContent = autoSoundEnabled ? '🔊 Автозвук: ВКЛ' : '🔇 Автозвук: ВЫКЛ';
     });
 
     const stage = document.getElementById('circles-stage');
+    const backdrop = document.getElementById('spotlight-backdrop');
     const tickerTrack = document.getElementById('ticker-track');
-    const MAX_CIRCLES = 10;
-    const activeCircles = [];
+    const MAX_ITEMS = 12;
+    const activeElements = [];
     const wishesList = [
-      { guest_name: 'Ведущий', message: 'Друзья, наводите камеру на QR-код в углу — шлите видеокружочки и тосты прямо на экран! 🥂✨' }
+      { guest_name: 'Ведущий', message: 'Друзья, наводите камеру на QR-код в углу — шлите видеокружочки и открытки прямо на экран! 🥂✨' }
     ];
+
+    let focusedElement = null;
+
+    function unfocusCurrent() {
+      if (!focusedElement) return;
+      focusedElement.classList.remove('focused');
+      const vid = focusedElement.querySelector('video');
+      if (vid) vid.muted = true;
+      focusedElement = null;
+      backdrop.classList.remove('active');
+    }
+
+    function focusElement(el) {
+      if (focusedElement === el) {
+        unfocusCurrent();
+        return;
+      }
+      unfocusCurrent();
+      el.classList.remove('premiere');
+      el.classList.add('focused');
+      focusedElement = el;
+      backdrop.classList.add('active');
+
+      const vid = el.querySelector('video');
+      if (vid) {
+        vid.muted = false;
+        vid.play().catch(() => {});
+      }
+    }
+
+    backdrop.addEventListener('click', unfocusCurrent);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        unfocusCurrent();
+        closeQrModal();
+      }
+    });
+
+    document.getElementById('clear-screen-btn').addEventListener('click', () => {
+      unfocusCurrent();
+      stage.innerHTML = '';
+      activeElements.length = 0;
+    });
+
+    function removeElementFromStage(el) {
+      if (focusedElement === el) {
+        unfocusCurrent();
+      }
+      const idx = activeElements.indexOf(el);
+      if (idx !== -1) activeElements.splice(idx, 1);
+
+      const vid = el.querySelector('video');
+      if (vid) {
+        vid.pause();
+        vid.removeAttribute('src');
+        vid.load();
+      }
+      el.remove();
+    }
+
+    async function deleteItemCompletely(item, el) {
+      removeElementFromStage(el);
+      if (item && item.id) {
+        try {
+          await sb.from('wedding_feed').delete().eq('id', item.id);
+        } catch (err) {
+          console.error('Ошибка удаления из БД:', err);
+        }
+      }
+    }
 
     function renderTicker() {
       const html = wishesList.slice(-18).map(w =>
@@ -820,63 +1226,91 @@
       tickerTrack.style.animation = `marquee ${duration}s linear infinite`;
     }
 
-    function getFreePosition() {
+    function getFreePosition(itemWidth = 240, itemHeight = 240) {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const minX = 60, maxX = w - 290;
-      const minY = 175, maxY = h - 335;
+      const minX = 55, maxX = Math.max(120, w - itemWidth - 60);
+      const minY = 170, maxY = Math.max(220, h - itemHeight - 125);
       return {
-        x: Math.floor(minX + Math.random() * Math.max(100, maxX - minX)),
-        y: Math.floor(minY + Math.random() * Math.max(100, maxY - minY))
+        x: Math.floor(minX + Math.random() * (maxX - minX)),
+        y: Math.floor(minY + Math.random() * (maxY - minY))
       };
     }
 
-    function spawnVideoCircle(item, isNew = true) {
-      const wrap = document.createElement('div');
-      wrap.className = 'video-circle-wrap' + (isNew ? ' premiere' : '');
+    async function loadLocalBlobUrl(remoteUrl) {
+      if (videoBlobCache.has(remoteUrl)) {
+        return videoBlobCache.get(remoteUrl);
+      }
+      try {
+        const response = await fetch(remoteUrl);
+        if (!response.ok) throw new Error('Fetch failed');
+        const blob = await response.blob();
+        const localUrl = URL.createObjectURL(blob);
+        videoBlobCache.set(remoteUrl, localUrl);
+        return localUrl;
+      } catch (err) {
+        return remoteUrl;
+      }
+    }
 
-      const pos = getFreePosition();
+    function restartVideoFromStart(videoEl, playableSrc) {
+      if (!document.body.contains(videoEl)) return;
+      try {
+        videoEl.pause();
+        videoEl.src = playableSrc;
+        videoEl.load();
+        const p = videoEl.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            videoEl.muted = true;
+            videoEl.play().catch(() => {});
+          });
+        }
+      } catch (e) {}
+    }
+
+    async function spawnVideoCircle(item, isNew = true) {
+      const playableSrc = await loadLocalBlobUrl(item.video_url);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'video-circle-wrap' + (isNew && !focusedElement ? ' premiere' : '');
+      if (item.id) wrap.dataset.itemId = String(item.id);
+
+      const pos = getFreePosition(220, 220);
       wrap.style.left = pos.x + 'px';
       wrap.style.top = pos.y + 'px';
+
+      const soundBadge = document.createElement('div');
+      soundBadge.className = 'sound-pill-badge';
+      soundBadge.textContent = '🔊 Звук включён';
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'item-delete-btn';
+      delBtn.title = 'Удалить этот кружок';
+      delBtn.textContent = '🗑';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteItemCompletely(item, wrap);
+      });
 
       const ring = document.createElement('div');
       ring.className = 'video-circle-ring';
 
       const videoEl = document.createElement('video');
-      videoEl.src = item.video_url;
+      videoEl.loop = false;
       videoEl.autoplay = true;
-      videoEl.loop = true;
       videoEl.playsInline = true;
       videoEl.setAttribute('playsinline', '');
       videoEl.setAttribute('webkit-playsinline', '');
       videoEl.preload = 'auto';
-      videoEl.muted = !(isNew && soundEnabled);
+      videoEl.muted = !(isNew && autoSoundEnabled && !focusedElement);
+      videoEl.src = playableSrc;
+      videoEl.dataset.playableSrc = playableSrc;
+      videoEl.dataset.lastTime = '-1';
 
-      // Надёжный перезапуск для видео с MediaRecorder (чтобы круг не становился пустым после 1-го цикла)
       videoEl.addEventListener('ended', () => {
-        try {
-          videoEl.currentTime = 0;
-          const playPromise = videoEl.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              videoEl.load();
-              videoEl.play().catch(() => {});
-            });
-          }
-        } catch (err) {
-          videoEl.load();
-          videoEl.play().catch(() => {});
-        }
-      });
-
-      // Страховка: если видео зависло в конце без события ended
-      videoEl.addEventListener('timeupdate', () => {
-        if (videoEl.duration && isFinite(videoEl.duration) && videoEl.duration > 0) {
-          if (videoEl.currentTime >= videoEl.duration - 0.15) {
-            videoEl.currentTime = 0;
-            videoEl.play().catch(() => {});
-          }
-        }
+        restartVideoFromStart(videoEl, playableSrc);
       });
 
       const authorEl = document.createElement('div');
@@ -884,57 +1318,118 @@
       authorEl.textContent = item.guest_name;
 
       ring.appendChild(videoEl);
+      wrap.appendChild(soundBadge);
+      wrap.appendChild(delBtn);
       wrap.appendChild(ring);
       wrap.appendChild(authorEl);
+
+      // Клик по кружку: увеличиваем в центре и включаем звук
+      wrap.addEventListener('click', () => focusElement(wrap));
+
       stage.appendChild(wrap);
-      activeCircles.push(wrap);
+      activeElements.push(wrap);
 
       videoEl.play().catch(() => {
         videoEl.muted = true;
         videoEl.play().catch(() => {});
       });
 
-      if (isNew) {
+      if (isNew && !focusedElement) {
         setTimeout(() => {
           wrap.classList.remove('premiere');
-          videoEl.muted = true;
-          // Принудительно поддерживаем воспроизведение после анимации уменьшения
-          setTimeout(() => {
-            if (videoEl.paused) {
-              videoEl.play().catch(() => {});
-            }
-          }, 150);
+          if (focusedElement !== wrap) {
+            videoEl.muted = true;
+          }
         }, 6500);
       }
 
-      if (activeCircles.length > MAX_CIRCLES) {
-        const oldest = activeCircles.shift();
-        const oldVid = oldest.querySelector('video');
-        if (oldVid) {
-          oldVid.pause();
-          oldVid.removeAttribute('src');
-          oldVid.load();
-        }
-        oldest.remove();
+      trimOverflowItems();
+    }
+
+    function spawnPostcard(item, isNew = true) {
+      const parsed = parsePostcardMessage(item.message);
+
+      const wrap = document.createElement('div');
+      wrap.className = `postcard-wrap card-theme-${parsed.theme}` + (isNew && !focusedElement ? ' premiere' : '');
+      if (item.id) wrap.dataset.itemId = String(item.id);
+
+      const pos = getFreePosition(265, 175);
+      wrap.style.left = pos.x + 'px';
+      wrap.style.top = pos.y + 'px';
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'item-delete-btn';
+      delBtn.title = 'Удалить открытку';
+      delBtn.textContent = '🗑';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteItemCompletely(item, wrap);
+      });
+
+      wrap.innerHTML = `
+        <div class="postcard-ornament">
+          <span>М & П</span>
+          <span>✦</span>
+        </div>
+        <div class="postcard-body">${escapeHtml(parsed.text)}</div>
+        <div class="postcard-footer">— ${escapeHtml(item.guest_name)}</div>
+      `;
+      wrap.appendChild(delBtn);
+
+      wrap.addEventListener('click', () => focusElement(wrap));
+
+      stage.appendChild(wrap);
+      activeElements.push(wrap);
+
+      if (isNew && !focusedElement) {
+        setTimeout(() => {
+          wrap.classList.remove('premiere');
+        }, 6000);
+      }
+
+      trimOverflowItems();
+    }
+
+    function trimOverflowItems() {
+      while (activeElements.length > MAX_ITEMS) {
+        const candidateIdx = activeElements.findIndex(el => el !== focusedElement);
+        if (candidateIdx === -1) break;
+        const [oldest] = activeElements.splice(candidateIdx, 1);
+        removeElementFromStage(oldest);
       }
     }
 
+    // Сторожевой таймер бесконечного повтора видео
     setInterval(() => {
-      activeCircles.forEach(el => {
-        if (el.classList.contains('premiere')) return;
+      activeElements.forEach(wrap => {
+        const vid = wrap.querySelector('video');
+        if (!vid || !vid.dataset.playableSrc) return;
+
+        const prevTime = parseFloat(vid.dataset.lastTime);
+        const curTime = vid.currentTime;
+
+        if (vid.ended || vid.paused || (prevTime >= 0 && Math.abs(curTime - prevTime) < 0.02)) {
+          restartVideoFromStart(vid, vid.dataset.playableSrc);
+          vid.dataset.lastTime = '-1';
+        } else {
+          vid.dataset.lastTime = String(curTime);
+        }
+      });
+    }, 2000);
+
+    // Плавный дрейф элементов по экрану
+    setInterval(() => {
+      activeElements.forEach(el => {
+        if (el.classList.contains('premiere') || el.classList.contains('focused')) return;
         const dx = (Math.random() - 0.5) * 70;
         const dy = (Math.random() - 0.5) * 50;
         const curX = parseFloat(el.style.left) || 200;
         const curY = parseFloat(el.style.top) || 250;
-        const nextX = Math.min(window.innerWidth - 270, Math.max(50, curX + dx));
+        const nextX = Math.min(window.innerWidth - 290, Math.max(50, curX + dx));
         const nextY = Math.min(window.innerHeight - 325, Math.max(170, curY + dy));
         el.style.left = nextX + 'px';
         el.style.top = nextY + 'px';
-
-        const vid = el.querySelector('video');
-        if (vid && vid.paused) {
-          vid.play().catch(() => {});
-        }
       });
     }, 7000);
 
@@ -942,7 +1437,9 @@
       if (item.type === 'video' && item.video_url) {
         spawnVideoCircle(item, isNew);
       } else if (item.type === 'text' && item.message) {
-        wishesList.push(item);
+        const parsed = parsePostcardMessage(item.message);
+        spawnPostcard(item, isNew);
+        wishesList.push({ guest_name: item.guest_name, message: parsed.text });
         renderTicker();
       }
     }
@@ -950,7 +1447,7 @@
     sb.from('wedding_feed')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(8)
+      .limit(10)
       .then(({ data }) => {
         if (data) {
           data.reverse().forEach(row => handleIncomingItem(row, false));
@@ -960,6 +1457,12 @@
     sb.channel('wedding-live')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wedding_feed' }, payload => {
         handleIncomingItem(payload.new, true);
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'wedding_feed' }, payload => {
+        if (payload.old && payload.old.id) {
+          const target = activeElements.find(el => el.dataset.itemId === String(payload.old.id));
+          if (target) removeElementFromStage(target);
+        }
       })
       .subscribe();
   }
@@ -972,6 +1475,7 @@
 
     let isHostMode = initialHostMode;
     let facingMode = isHostMode ? 'environment' : 'user';
+    let selectedCardTheme = 'silk';
 
     const roleLabel = document.getElementById('role-label');
     const toggleHostBtn = document.getElementById('toggle-host-mode-btn');
@@ -1036,6 +1540,17 @@
       });
     });
 
+    // Выбор дизайна открытки
+    const cardPreviewBox = document.getElementById('mobile-card-preview');
+    document.querySelectorAll('.style-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        document.querySelectorAll('.style-swatch').forEach(s => s.classList.remove('selected'));
+        swatch.classList.add('selected');
+        selectedCardTheme = swatch.dataset.theme;
+        cardPreviewBox.className = `mobile-card-preview card-theme-${selectedCardTheme}`;
+      });
+    });
+
     const wishInput = document.getElementById('wish-text');
     document.querySelectorAll('.emoji-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1053,8 +1568,17 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let recordedBlob = null;
+    let recordedPreviewUrl = null;
     let chosenMime = '';
     let recInterval = null;
+
+    recordedEl.addEventListener('ended', () => {
+      if (recordedPreviewUrl && recordedEl.style.display === 'block') {
+        recordedEl.src = recordedPreviewUrl;
+        recordedEl.load();
+        recordedEl.play().catch(() => {});
+      }
+    });
 
     function pickSupportedMime() {
       const types = [
@@ -1121,10 +1645,10 @@
       mediaRecorder.onstop = () => {
         const finalType = chosenMime || 'video/mp4';
         recordedBlob = new Blob(recordedChunks, { type: finalType });
-        const url = URL.createObjectURL(recordedBlob);
+        recordedPreviewUrl = URL.createObjectURL(recordedBlob);
         previewEl.style.display = 'none';
         flipCamBtn.style.display = 'none';
-        recordedEl.src = url;
+        recordedEl.src = recordedPreviewUrl;
         recordedEl.style.display = 'block';
         recordedEl.play();
 
@@ -1158,6 +1682,7 @@
 
     retakeBtn.addEventListener('click', () => {
       recordedBlob = null;
+      recordedPreviewUrl = null;
       recordedEl.pause();
       recordedEl.style.display = 'none';
       previewEl.style.display = 'block';
@@ -1211,26 +1736,27 @@
 
     sendTextBtn.addEventListener('click', async () => {
       const guestName = nameInput.value.trim() || 'Гость свадьбы';
-      const message = wishInput.value.trim();
-      if (!message) {
-        setStatus('Напишите пару тёплых слов! 🥂');
+      const rawText = wishInput.value.trim();
+      if (!rawText) {
+        setStatus('Напишите пару тёплых слов для открытки! 🥂');
         return;
       }
 
       sendTextBtn.disabled = true;
-      setStatus('Отправляем в эфир...');
+      setStatus('Отправляем открытку в эфир...');
 
       try {
+        const formattedMessage = `[CARD:${selectedCardTheme}]${rawText}`;
         const { error } = await sb.from('wedding_feed').insert({
           guest_name: guestName,
           type: 'text',
-          message
+          message: formattedMessage
         });
         if (error) throw error;
 
         wishInput.value = '';
         if (isHostMode) nameInput.value = '';
-        setStatus('Пожелание уже летит в бегущей строке! 💌');
+        setStatus('Открытка уже на большом экране! 💌');
       } catch (err) {
         setStatus('Не удалось отправить. Попробуйте ещё раз.');
       } finally {
